@@ -112,36 +112,76 @@ fn spelling_matches(surface: &str, reading: &str) -> bool {
     true
 }
 
-/// Sudachi sometimes splits one hiragana word into several tokens
-/// (`おもう` → `お` + `もう`). Consecutive surfaces that spell the anchor's
-/// reading belong to that word, not to independent articles.
-fn is_part_of_split_writing(tokens: &[TokenInfo], index: usize, anchors: &[WritingAnchor]) -> bool {
+/// Last token index of a run of hiragana surfaces starting at `start` that
+/// spells `reading` exactly (`お` + `もう` → `おもう`).
+fn split_written_end(tokens: &[TokenInfo], start: usize, reading: &str) -> Option<usize> {
+    let mut spelled = String::new();
+    for (offset, token) in tokens.iter().enumerate().skip(start) {
+        let surface = token.orthographic_surface_form();
+        if !surface.chars().all(|c| c.is_hiragana()) {
+            return None;
+        }
+        spelled.push_str(surface);
+        if spelled == reading {
+            return Some(offset);
+        }
+        if !reading.starts_with(&spelled) {
+            return None;
+        }
+    }
+    None
+}
+
+/// Indices of all consecutive-surface runs that spell an anchor's reading —
+/// variants of that word, not independent articles.
+fn split_writing_indices(
+    tokens: &[TokenInfo],
+    anchors: &[WritingAnchor],
+) -> std::collections::HashSet<usize> {
+    let mut covered = std::collections::HashSet::new();
     for anchor in anchors {
-        for start in 0..=index {
-            let mut spelled = String::new();
-            let mut covers = false;
-            for (offset, token) in tokens.iter().enumerate().skip(start) {
-                let surface = token.orthographic_surface_form();
-                if !surface.chars().all(|c| c.is_hiragana()) {
-                    break;
-                }
-                spelled.push_str(surface);
-                if offset == index {
-                    covers = true;
-                }
-                if spelled == anchor.reading {
-                    if covers {
-                        return true;
-                    }
-                    break;
-                }
-                if !anchor.reading.starts_with(&spelled) {
-                    break;
-                }
+        for start in 0..tokens.len() {
+            if let Some(end) = split_written_end(tokens, start, &anchor.reading) {
+                covered.extend(start..=end);
             }
         }
     }
-    false
+    covered
+}
+
+fn writing_anchors(tokens: &[TokenInfo], text: &str) -> Vec<WritingAnchor> {
+    tokens
+        .iter()
+        .filter(|token| token.part_of_speech().is_vocabulary_word())
+        .filter_map(|token| {
+            let lemma = token.orthographic_base_form();
+            if lemma.contains_kanji() && text.contains(lemma) {
+                Some(WritingAnchor {
+                    lemma: lemma.to_string(),
+                    reading: hiragana_reading(token),
+                })
+            } else {
+                None
+            }
+        })
+        .collect()
+}
+
+/// Is this candidate a hiragana/inflected/homophone variant of a kanji
+/// writing the user typed in the same input?
+fn is_variant_of_anchor(
+    token: &TokenInfo,
+    index: usize,
+    base: &str,
+    anchors: &[WritingAnchor],
+    split_written: &std::collections::HashSet<usize>,
+) -> bool {
+    anchors.iter().any(|anchor| {
+        anchor.lemma != base
+            && (spelling_matches(token.orthographic_surface_form(), &anchor.reading)
+                || (base.chars().all(|c| c.is_hiragana()) && anchor.reading == base)
+                || split_written.contains(&index))
+    })
 }
 
 impl<'a, R: UserRepository> AnalyzeTextForCardsUseCase<'a, R> {
@@ -166,21 +206,8 @@ impl<'a, R: UserRepository> AnalyzeTextForCardsUseCase<'a, R> {
         // article. Hiragana forms and homophone articles reached through a
         // hiragana surface are variants of it in THIS input; the dictionary
         // articles themselves stay untouched (uwuwu#1463 US-1, NFT-3).
-        let anchors: Vec<WritingAnchor> = tokens
-            .iter()
-            .filter(|token| token.part_of_speech().is_vocabulary_word())
-            .filter_map(|token| {
-                let lemma = token.orthographic_base_form();
-                if lemma.contains_kanji() && text.contains(lemma) {
-                    Some(WritingAnchor {
-                        lemma: lemma.to_string(),
-                        reading: hiragana_reading(token),
-                    })
-                } else {
-                    None
-                }
-            })
-            .collect();
+        let anchors = writing_anchors(&tokens, &text);
+        let split_written = split_writing_indices(&tokens, &anchors);
 
         let mut words: Vec<AnalyzedWord> = Vec::new();
         let mut seen_words = std::collections::HashSet::new();
@@ -192,13 +219,7 @@ impl<'a, R: UserRepository> AnalyzeTextForCardsUseCase<'a, R> {
 
             let base = token.orthographic_base_form();
             let is_anchor = anchors.iter().any(|anchor| anchor.lemma == base);
-            if !is_anchor
-                && anchors.iter().any(|anchor| {
-                    spelling_matches(token.orthographic_surface_form(), &anchor.reading)
-                        || (base.chars().all(|c| c.is_hiragana()) && anchor.reading == base)
-                        || is_part_of_split_writing(&tokens, index, &anchors)
-                })
-            {
+            if !is_anchor && is_variant_of_anchor(token, index, base, &anchors, &split_written) {
                 continue;
             }
 
