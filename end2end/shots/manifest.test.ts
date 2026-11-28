@@ -125,6 +125,15 @@ test("a damaged proof chunk fails loudly", () => {
   assert.throws(() => readProof(damaged), /corrupt PNG chunk/);
 });
 
+test("a proof with an unknown schema is rejected", () => {
+  const png = stampProof(minimalPng(), {
+    schema: 99 as 1,
+    commit: "abc123",
+    screen: "home",
+  });
+  assert.throws(() => readProof(png), /invalid proof payload/);
+});
+
 test("the same pixels with a different commit have a different hash", () => {
   const png = minimalPng();
   const first = stampProof(png, { schema: 1, commit: "aaa", screen: "home" });

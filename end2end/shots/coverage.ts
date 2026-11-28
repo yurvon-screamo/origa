@@ -16,4 +16,5 @@ export {
   compareManifest,
   formatCoverageReport,
   provedRows,
+  resolveProofFile,
 } from "./coverage-report.ts";

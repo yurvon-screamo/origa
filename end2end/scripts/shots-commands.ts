@@ -11,6 +11,7 @@ import {
   compareManifest,
   formatCoverageReport,
   provedRows,
+  resolveProofFile,
 } from "../shots/coverage.ts";
 import { repoImageName, type ShotEntry } from "../shots/manifest.ts";
 
@@ -80,7 +81,11 @@ export async function runStore(
   const target = join(repoRoot, "docs/ui-screenshots/images");
   await mkdir(target, { recursive: true });
   for (const entry of entries) {
-    await copyFile(entry.file, join(target, repoImageName(entry)));
+    const source = resolveProofFile(from, entry.file);
+    if (source === null) {
+      throw new Error(`store: frame outside --out: ${entry.file}`);
+    }
+    await copyFile(source, join(target, repoImageName(entry)));
   }
   console.log(`В репозиторий скопировано кадров: ${entries.length}`);
   console.log(`Каталог: ${target}`);

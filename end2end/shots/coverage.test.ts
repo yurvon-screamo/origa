@@ -361,6 +361,16 @@ test("a stamp from a non-ancestor commit is red", async () => {
   assert.deepEqual(provedRows([row()], issues), []);
 });
 
+test("an ancestor commit other than HEAD proves the row", async () => {
+  const frames = [frame("home", "home", "desktop", "older-commit")];
+  const issues = await compareManifest(
+    [row({ viewports: ["desktop"] })],
+    frames,
+    ctxFor(frames, { expected: "head-commit" }),
+  );
+  assert.deepEqual(issues, []);
+});
+
 test("a stamp naming another screen is red", async () => {
   const entry = frame("home", "home", "desktop");
   const png = stampFor(entry, { screen: "other-screen" });

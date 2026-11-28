@@ -25,7 +25,7 @@ export interface ShotSink {
    */
   shot(
     name: string,
-    options?: { fullPage?: boolean; marker?: string },
+    options: { marker: string; fullPage?: boolean },
   ): Promise<ShotEntry>;
   /** Everything captured through this sink, in capture order. */
   readonly entries: readonly ShotEntry[];

@@ -17,6 +17,13 @@ export interface ProofContext {
   readonly proofRoot: string;
 }
 
+/** Resolves a manifest file inside the proof root, or rejects it. */
+export function resolveProofFile(root: string, file: string): string | null {
+  const absolute = resolve(file);
+  const base = resolve(root);
+  return absolute === base || absolute.startsWith(base + sep) ? absolute : null;
+}
+
 function frameMatches(
   entry: ShotEntry,
   row: CoverageRow,
@@ -38,12 +45,10 @@ export async function compareManifest(
 ): Promise<CoverageIssue[]> {
   const issues: CoverageIssue[] = [];
   const stamps = new Map<ShotEntry, ShotProof>();
-  const root = resolve(ctx.proofRoot);
-
   for (const entry of entries) {
     if (entry.file === "") continue;
-    const absolute = resolve(entry.file);
-    if (absolute !== root && !absolute.startsWith(root + sep)) {
+    const absolute = resolveProofFile(ctx.proofRoot, entry.file);
+    if (absolute === null) {
       issues.push({
         row: "manifest",
         problem: `frame outside --run: ${entry.file}`,
@@ -87,10 +92,7 @@ export async function compareManifest(
         problem: `screen stamp mismatch: ${entry.screen} ≠ ${proof.screen}`,
       });
     }
-    if (
-      proof.commit !== ctx.expectedCommit ||
-      !ctx.isAncestor(proof.commit, ctx.expectedCommit)
-    ) {
+    if (!ctx.isAncestor(proof.commit, ctx.expectedCommit)) {
       issues.push({
         row: "manifest",
         problem: `proof commit ${proof.commit} is not an ancestor of HEAD ${ctx.expectedCommit}`,
@@ -108,7 +110,8 @@ export async function compareManifest(
   }
 
   const proved = entries.filter((entry) => stamps.has(entry));
-  for (const entry of entries.filter((item) => item.file === "")) {
+  const negatives = entries.filter((entry) => entry.file === "");
+  for (const entry of negatives) {
     for (const row of rows) {
       if (
         row.status === "covered" &&
@@ -128,7 +131,8 @@ export async function compareManifest(
     for (const viewport of row.viewports) {
       for (const screen of row.screens) {
         if (
-          !proved.some((entry) => frameMatches(entry, row, screen, viewport))
+          !proved.some((entry) => frameMatches(entry, row, screen, viewport)) &&
+          !negatives.some((entry) => frameMatches(entry, row, screen, viewport))
         ) {
           issues.push({
             row: row.id,

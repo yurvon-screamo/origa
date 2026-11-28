@@ -100,7 +100,19 @@ export function readProof(png: Buffer): ShotProof | null {
         separator >= 0 &&
         data.toString("latin1", 0, separator) === PROOF_KEYWORD
       ) {
-        return JSON.parse(data.toString("utf8", separator + 1)) as ShotProof;
+        const proof: unknown = JSON.parse(data.toString("utf8", separator + 1));
+        if (
+          typeof proof !== "object" ||
+          proof === null ||
+          (proof as ShotProof).schema !== 1 ||
+          typeof (proof as ShotProof).commit !== "string" ||
+          (proof as ShotProof).commit === "" ||
+          typeof (proof as ShotProof).screen !== "string" ||
+          (proof as ShotProof).screen === ""
+        ) {
+          throw new Error("invalid proof payload");
+        }
+        return proof as ShotProof;
       }
     }
     if (type === "IEND") break;
