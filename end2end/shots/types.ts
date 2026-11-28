@@ -19,7 +19,14 @@ export interface ShotContext {
  * provenance) — a scenario only names the screen it wants to keep.
  */
 export interface ShotSink {
-  shot(name: string, options?: { fullPage?: boolean }): Promise<ShotEntry>;
+  /**
+   * `marker` is a test-id, or a `css=` selector where the markup has no
+   * marker. The sink settles it before writing the frame.
+   */
+  shot(
+    name: string,
+    options?: { fullPage?: boolean; marker?: string },
+  ): Promise<ShotEntry>;
   /** Everything captured through this sink, in capture order. */
   readonly entries: readonly ShotEntry[];
 }

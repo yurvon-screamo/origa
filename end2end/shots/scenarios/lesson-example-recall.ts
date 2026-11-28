@@ -48,14 +48,14 @@ export const lessonExampleRecallScenario: ShotScenario = {
       if (!sentence) continue;
 
       await page.waitForTimeout(900);
-      await sink.shot("example-question");
+      await sink.shot("example-question", { marker: "lesson-page" });
 
       await page
         .getByTestId("lesson-example-reveal")
         .click({ timeout: 10_000 });
       // The token translator resolves asynchronously.
       await page.waitForTimeout(2_000);
-      await sink.shot("example-answer");
+      await sink.shot("example-answer", { marker: "lesson-example-reveal" });
 
       const questionShown = await page
         .getByTestId("lesson-example-sentence")

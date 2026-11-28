@@ -28,6 +28,6 @@ export const tokenPopupScenario: ShotScenario = {
     await page
       .getByTestId("token-popup-report")
       .waitFor({ state: "visible", timeout: 10_000 });
-    await sink.shot("token-popup-report");
+    await sink.shot("token-popup-report", { marker: "token-popup-report" });
   },
 };

@@ -43,7 +43,9 @@ export async function runStore(
 ): Promise<number> {
   const from = options.run ?? options.out;
   if (!from) throw new Error("store needs --out or --run");
-  const entries = await readManifest(from);
+  const entries = (await readManifest(from)).filter(
+    (entry) => entry.file !== "",
+  );
   const target = join(repoRoot, "docs/ui-screenshots/images");
   await mkdir(target, { recursive: true });
   for (const entry of entries) {

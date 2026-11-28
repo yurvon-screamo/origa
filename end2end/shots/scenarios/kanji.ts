@@ -13,12 +13,12 @@ export const kanjiScenario: ShotScenario = {
       timeout: 60_000,
     });
     await waitForAppReady(page);
-    await sink.shot("kanji-list");
+    await sink.shot("kanji-list", { marker: "kanji-page" });
     await page.getByTestId("kanji-add-btn").click();
     await expect(page.getByTestId("kanji-add-drawer")).toBeVisible({
       timeout: 15_000,
     });
-    await sink.shot("kanji-add-drawer");
+    await sink.shot("kanji-add-drawer", { marker: "kanji-add-drawer" });
 
     await page.keyboard.press("Escape");
     await page.getByTestId("kanji-card-item").first().click();
@@ -29,7 +29,7 @@ export const kanjiScenario: ShotScenario = {
       await expect(page.getByTestId("kanji-detail-tabs")).toBeVisible({
         timeout: 30_000,
       });
-      await sink.shot("kanji-detail-tabs");
+      await sink.shot("kanji-detail-tabs", { marker: "kanji-detail-tabs" });
     }
   },
 };

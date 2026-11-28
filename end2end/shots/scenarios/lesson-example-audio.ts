@@ -17,7 +17,9 @@ export const lessonExampleAudioScenario: ShotScenario = {
         const audio = page.getByTestId("lesson-example-audio");
         if (await audio.isVisible().catch(() => false)) {
           await page.waitForTimeout(700);
-          await sink.shot("example-audio-question");
+          await sink.shot("example-audio-question", {
+            marker: "lesson-example-audio",
+          });
           return;
         }
       }

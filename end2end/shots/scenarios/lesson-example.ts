@@ -57,7 +57,9 @@ export const lessonExampleScenario: ShotScenario = {
           );
         }
         await page.waitForTimeout(1_500);
-        await sink.shot("acquaintance-example");
+        await sink.shot("acquaintance-example", {
+          marker: "acquaintance-view",
+        });
         acquaintanceShot = true;
         break;
       }
@@ -92,7 +94,7 @@ export const lessonExampleScenario: ShotScenario = {
           timeout: 8_000,
         });
         await page.waitForTimeout(800);
-        await sink.shot("answer-example");
+        await sink.shot("answer-example", { marker: "lesson-card" });
         answerShot = true;
       } catch {
         await lesson.clickNextCard().catch(() => undefined);

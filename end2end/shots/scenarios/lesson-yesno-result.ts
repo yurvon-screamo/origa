@@ -37,12 +37,16 @@ export const lessonYesnoResultScenario: ShotScenario = {
         if ((await yesno.isVisible().catch(() => false)) && !yesnoShot) {
           await yesno.click({ timeout: 4_000 }).catch(() => undefined);
           await page.waitForTimeout(600);
-          await sink.shot("yesno-result");
+          await sink.shot("yesno-result", {
+            marker: "yesno-full-card-expand",
+          });
           const details = page.getByTestId("kanji-details-toggle");
           if (await details.isVisible().catch(() => false)) {
             await details.click({ timeout: 4_000 }).catch(() => undefined);
             await page.waitForTimeout(700);
-            await sink.shot("yesno-result-expanded");
+            await sink.shot("yesno-result-expanded", {
+              marker: "kanji-details-toggle",
+            });
           }
           yesnoShot = true;
           await page
@@ -79,12 +83,14 @@ export const lessonYesnoResultScenario: ShotScenario = {
         if ((await singleOption.isVisible().catch(() => false)) && !quizShot) {
           await singleOption.click({ timeout: 4_000 }).catch(() => undefined);
           await page.waitForTimeout(600);
-          await sink.shot("quiz-result");
+          await sink.shot("quiz-result", { marker: "lesson-page" });
           const details = page.getByTestId("kanji-details-toggle");
           if (await details.isVisible().catch(() => false)) {
             await details.click({ timeout: 4_000 }).catch(() => undefined);
             await page.waitForTimeout(700);
-            await sink.shot("quiz-result-expanded");
+            await sink.shot("quiz-result-expanded", {
+              marker: "kanji-details-toggle",
+            });
           }
           quizShot = true;
           await page

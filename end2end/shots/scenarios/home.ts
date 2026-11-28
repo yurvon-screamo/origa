@@ -17,6 +17,6 @@ export const homeScenario: ShotScenario = {
       .waitFor({ state: "visible", timeout: 60_000 });
     await waitForAppReady(page);
     await waitForSyncToast(page);
-    await sink.shot("home");
+    await sink.shot("home", { marker: "home-page" });
   },
 };

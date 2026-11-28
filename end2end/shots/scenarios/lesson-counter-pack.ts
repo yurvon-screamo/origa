@@ -21,7 +21,7 @@ export const lessonCounterPackScenario: ShotScenario = {
     const pack = page.getByTestId("counter-binding-front");
     await pack.waitFor({ state: "visible", timeout: 90_000 });
     await page.waitForTimeout(700);
-    await sink.shot("pack-front");
+    await sink.shot("pack-front", { marker: "counter-binding-front" });
 
     // Reveal the reading answer (the shared Space pipeline).
     await page.keyboard.press(" ");
@@ -29,7 +29,7 @@ export const lessonCounterPackScenario: ShotScenario = {
       .getByTestId("counter-binding-answer")
       .waitFor({ timeout: 10_000 });
     await page.waitForTimeout(700);
-    await sink.shot("pack-answer");
+    await sink.shot("pack-answer", { marker: "counter-binding-answer" });
 
     // The full readings table behind the expand toggle (the answered
     // row keeps its accent).
@@ -38,6 +38,8 @@ export const lessonCounterPackScenario: ShotScenario = {
       .getByTestId("counter-binding-mutations-table")
       .waitFor({ timeout: 10_000 });
     await page.waitForTimeout(700);
-    await sink.shot("pack-answer-table");
+    await sink.shot("pack-answer-table", {
+      marker: "counter-binding-mutations-table",
+    });
   },
 };

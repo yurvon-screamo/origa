@@ -22,7 +22,7 @@ export const jftCardScenario: ShotScenario = {
       .getByTestId("home-jft-readiness-stamp")
       .waitFor({ state: "visible", timeout: 10_000 });
     await waitForSyncToast(page);
-    await sink.shot("home-jft");
+    await sink.shot("home-jft", { marker: "home-jft-readiness-stamp" });
 
     // Sets page: filter to Irodori so the badge cards fill the viewport.
     await page.goto("/sets", { waitUntil: "domcontentloaded" });
@@ -37,6 +37,6 @@ export const jftCardScenario: ShotScenario = {
       .getByTestId("sets-card-jft-badge")
       .first()
       .waitFor({ state: "visible", timeout: 60_000 });
-    await sink.shot("sets-jft-badge");
+    await sink.shot("sets-jft-badge", { marker: "sets-card-jft-badge" });
   },
 };

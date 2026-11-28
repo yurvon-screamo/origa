@@ -57,7 +57,9 @@ export const lessonAcquaintanceWordScenario: ShotScenario = {
         .catch(() => false);
       if (wordSlide) {
         await page.waitForTimeout(700);
-        await sink.shot("word-presentation");
+        await sink.shot("word-presentation", {
+          marker: "acquaintance-word-slide",
+        });
         presentationShot = true;
         break;
       }
@@ -120,7 +122,9 @@ export const lessonAcquaintanceWordScenario: ShotScenario = {
           "no corner button on the audio front",
         ).toHaveCount(0);
         await page.waitForTimeout(500);
-        await sink.shot("word-training-audio-front");
+        await sink.shot("word-training-audio-front", {
+          marker: "acquaintance-audio-front-play",
+        });
         audioFrontShot = true;
       } else if (
         !textFrontShot &&
@@ -148,7 +152,9 @@ export const lessonAcquaintanceWordScenario: ShotScenario = {
           "the text front shows a serif word",
         ).toBeVisible();
         await page.waitForTimeout(500);
-        await sink.shot("word-training-front");
+        await sink.shot("word-training-front", {
+          marker: "acquaintance-training-front",
+        });
         textFrontShot = true;
       }
 
@@ -176,7 +182,9 @@ export const lessonAcquaintanceWordScenario: ShotScenario = {
               "the corner button returns on the answer side",
             ).toBeVisible();
             await page.waitForTimeout(500);
-            await sink.shot("word-training-answer");
+            await sink.shot("word-training-answer", {
+              marker: "acquaintance-training-answer",
+            });
             answerShot = true;
           }
         }

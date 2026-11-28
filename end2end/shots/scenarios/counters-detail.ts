@@ -38,7 +38,12 @@ export const countersDetailScenario: ShotScenario = {
       timeout: 30_000,
     });
     await page.waitForTimeout(2_000); // fonts settle
-    await sink.shot("detail-full", { fullPage: true });
-    await sink.shot("detail-viewport");
+    await sink.shot("detail-full", {
+      fullPage: true,
+      marker: "counters-detail-examples",
+    });
+    await sink.shot("detail-viewport", {
+      marker: "counters-detail-examples",
+    });
   },
 };

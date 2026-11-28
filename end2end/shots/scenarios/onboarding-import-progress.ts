@@ -30,9 +30,9 @@ export const onboardingImportProgressScenario: ShotScenario = {
     await expect(progress).toBeVisible({ timeout: 600_000 });
 
     await page.waitForTimeout(500);
-    await sink.shot("progress");
+    await sink.shot("progress", { marker: "onboarding-import-progress" });
 
     await waitForScoringReady(page, 600_000);
-    await sink.shot("scoring");
+    await sink.shot("scoring", { marker: "onboarding-page" });
   },
 };

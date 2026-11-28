@@ -24,6 +24,8 @@ export const homeJlptDetailsScenario: ShotScenario = {
       .getByTestId("home-jlpt-progress-expanded-kanji")
       .waitFor({ state: "visible", timeout: 10_000 });
     await waitForSyncToast(page);
-    await sink.shot("home-jlpt-details");
+    await sink.shot("home-jlpt-details", {
+      marker: "home-jlpt-progress-expanded-kanji",
+    });
   },
 };

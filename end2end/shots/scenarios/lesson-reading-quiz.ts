@@ -74,7 +74,7 @@ export const lessonReadingQuizScenario: ShotScenario = {
             .catch(() => false))
         ) {
           await page.waitForTimeout(700);
-          await sink.shot("writing-card");
+          await sink.shot("writing-card", { marker: "lesson-page" });
           writingShot = true;
         }
 
@@ -204,7 +204,9 @@ async function loadKanjiDict(page: Page): Promise<KanjiEntry[]> {
 
 async function captureReadingQuiz(
   page: Page,
-  sink: { shot(name: string): Promise<unknown> },
+  sink: {
+    shot(name: string, options?: { marker?: string }): Promise<unknown>;
+  },
 ): Promise<boolean> {
   // The quiz renders the kanji through DisplayText with a dedicated
   // test id (`lesson-quiz-kanji`, quiz_card.rs).
@@ -247,7 +249,7 @@ async function captureReadingQuiz(
   }
 
   await page.waitForTimeout(500);
-  await sink.shot("quiz-question");
+  await sink.shot("quiz-question", { marker: "lesson-page" });
 
   await page.getByTestId("quiz-submit-btn").click({ timeout: 8_000 });
   await page
@@ -277,7 +279,7 @@ async function captureReadingQuiz(
       .catch(() => undefined);
     return false;
   }
-  await sink.shot("quiz-answer");
+  await sink.shot("quiz-answer", { marker: "lesson-page" });
 
   await page
     .getByTestId("lesson-card-next-btn")

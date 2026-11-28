@@ -56,6 +56,6 @@ export const counterScoringScenario: ShotScenario = {
     }
 
     await page.waitForTimeout(500);
-    await sink.shot(`card-${variant}`);
+    await sink.shot(`card-${variant}`, { marker: "onboarding-scoring-step" });
   },
 };

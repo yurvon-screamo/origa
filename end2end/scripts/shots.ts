@@ -241,6 +241,15 @@ async function captureCommand(options: Options): Promise<number> {
     console.error("Снимки не получены — манифест пуст");
     return 1;
   }
+  const failed = entries.filter((entry) => entry.file === "");
+  if (failed.length > 0) {
+    for (const entry of failed) {
+      console.error(
+        `  ✗ ${entry.scenario}/${entry.screen} [${entry.viewport}]: маркер не установился — кадр не доказан`,
+      );
+    }
+    return 1;
+  }
 
   const uploads = new Map<string, UploadInfo>();
   if (options.upload) {

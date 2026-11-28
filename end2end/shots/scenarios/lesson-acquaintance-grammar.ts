@@ -55,7 +55,10 @@ export const lessonAcquaintanceGrammarScenario: ShotScenario = {
         // the nuances list sits below the fold — the structured
         // rendering (the VwvKYcJQHp fix) must be visible in the shot.
         await page.waitForTimeout(700);
-        await sink.shot("grammar-presentation", { fullPage: true });
+        await sink.shot("grammar-presentation", {
+          fullPage: true,
+          marker: "acquaintance-view",
+        });
         presentationShot = true;
       }
       await next.click({ timeout: 2_000 }).catch(() => undefined);
@@ -123,7 +126,7 @@ export const lessonAcquaintanceGrammarScenario: ShotScenario = {
           .catch(() => false)
       ) {
         await page.waitForTimeout(700);
-        await sink.shot("grammar-answer");
+        await sink.shot("grammar-answer", { marker: "acquaintance-training" });
 
         // The expanded «Подробнее» body: the unified section frames
         // (Примеры/Нюансы/Совет) with the single title underline.
@@ -144,7 +147,10 @@ export const lessonAcquaintanceGrammarScenario: ShotScenario = {
             .first(),
         ).toBeVisible({ timeout: 5_000 });
         await page.waitForTimeout(700);
-        await sink.shot("grammar-details", { fullPage: true });
+        await sink.shot("grammar-details", {
+          fullPage: true,
+          marker: "acquaintance-grammar-details",
+        });
         grammarShot = true;
         break;
       }

@@ -29,12 +29,14 @@ export const lessonQuizMultiScenario: ShotScenario = {
         await page.getByTestId("quiz-option-1").click();
         if ((await selectedOptions(page)) < 2) return false;
         await page.waitForTimeout(700);
-        await sink.shot("multi-quiz-question");
+        await sink.shot("multi-quiz-question", { marker: "quiz-option-1" });
         await page.getByTestId("quiz-submit-btn").click();
         await expect(page.getByTestId("quiz-feedback-strip")).toBeVisible({
           timeout: 10_000,
         });
-        await sink.shot("multi-quiz-result");
+        await sink.shot("multi-quiz-result", {
+          marker: "quiz-feedback-strip",
+        });
         return true;
       });
       if (found) return;

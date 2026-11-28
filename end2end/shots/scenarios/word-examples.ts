@@ -18,7 +18,10 @@ export const wordExamplesScenario: ShotScenario = {
       "word-detail-word",
     );
     await page.waitForTimeout(3_000); // examples chunk fetch
-    await sink.shot("detail-full", { fullPage: true });
-    await sink.shot("detail-viewport");
+    await sink.shot("detail-full", {
+      fullPage: true,
+      marker: "examples-page",
+    });
+    await sink.shot("detail-viewport", { marker: "examples-page" });
   },
 };

@@ -47,7 +47,10 @@ export const lessonAcquaintanceKanjiScenario: ShotScenario = {
           // below the fold — give the layout a beat before the shot.
           await page.waitForTimeout(400);
         }
-        await sink.shot("kanji-presentation", { fullPage: true });
+        await sink.shot("kanji-presentation", {
+          fullPage: true,
+          marker: "acquaintance-view",
+        });
         kanjiShot = true;
         break;
       }

@@ -30,7 +30,10 @@ export const wordsGridScenario: ShotScenario = {
       });
     }
     await page.waitForTimeout(2_000); // fonts settle
-    await sink.shot("grid-full", { fullPage: true });
-    await sink.shot("grid-viewport");
+    await sink.shot("grid-full", {
+      fullPage: true,
+      marker: "words-card-item",
+    });
+    await sink.shot("grid-viewport", { marker: "words-card-item" });
   },
 };

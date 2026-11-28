@@ -28,7 +28,9 @@ export const lessonUnificationScenario: ShotScenario = {
       throw new Error("the acquaintance hand must be on screen");
     }
     await page.waitForTimeout(700);
-    await sink.shot("acquaintance-presentation");
+    await sink.shot("acquaintance-presentation", {
+      marker: "acquaintance-view",
+    });
 
     // Presentation → Next through the slides until the training takes over.
     for (let index = 0; index < 12; index++) {
@@ -61,7 +63,9 @@ export const lessonUnificationScenario: ShotScenario = {
         rounds += 1;
         if (rounds <= 2) {
           await page.waitForTimeout(700);
-          await sink.shot(`acquaintance-training-answer-${rounds}`);
+          await sink.shot(`acquaintance-training-answer-${rounds}`, {
+            marker: "acquaintance-training",
+          });
         }
       }
       const rated = await clickFirstVisible(
@@ -89,7 +93,7 @@ export const lessonUnificationScenario: ShotScenario = {
       .catch(() => false);
     if (completeShown) {
       await page.waitForTimeout(700);
-      await sink.shot("lesson-complete");
+      await sink.shot("lesson-complete", { marker: "lesson-complete-screen" });
       return;
     }
 
