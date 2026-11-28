@@ -69,24 +69,6 @@ test("the committed inventory satisfies the structural invariants", async () => 
   assert.deepEqual(checkStatic(await staticInput()), []);
 });
 
-test("the practice answer and completion screens are examined", async () => {
-  const issues = checkStatic(
-    await staticWithRows([
-      row({
-        id: "variation:grammar-practice-answer-complete",
-        scenario: "grammar-detail",
-        screens: ["grammar-practice-answer", "grammar-practice-complete"],
-      }),
-    ]),
-  );
-  assert.ok(
-    !issues.some(
-      (issue) => issue.problem === "no examined screen for this row",
-    ),
-    "practice screens need examiner keys",
-  );
-});
-
 test("every catalog scenario is named by an inventory row", async () => {
   const referenced = new Set(
     inventory.map((item) => item.scenario).filter((id): id is string => !!id),

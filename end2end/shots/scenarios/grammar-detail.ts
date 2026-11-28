@@ -26,6 +26,31 @@ async function framePractice(page: Page, testId: string): Promise<void> {
   await expect(marker).toBeInViewport();
 }
 
+/** Resolves when every option has finished its answer-colour transition. */
+function optionsSettled(page: Page): Promise<void> {
+  return page
+    .locator('[data-testid^="grammar-practice-option-"]')
+    .evaluateAll((elements) =>
+      Promise.all(
+        elements.map(
+          (element) =>
+            new Promise<void>((resolve) => {
+              const timer = setTimeout(resolve, 1_000);
+              element.addEventListener(
+                "transitionend",
+                () => {
+                  clearTimeout(timer);
+                  resolve();
+                },
+                { once: true },
+              );
+            }),
+        ),
+      ),
+    )
+    .then(() => undefined);
+}
+
 /**
  * A grammar rule detail: overview, the practice session and the delete
  * confirmation. The practice preset seeds a quiz-capable rule plus one
@@ -72,17 +97,19 @@ export const grammarDetailScenario: ShotScenario = {
     await framePractice(page, "grammar-practice-progress");
     await sink.shot("grammar-practice-question");
 
+    const settled = optionsSettled(page);
     await clickFirstVisible(page, OPTIONS);
+    await settled;
     const nextButton = page.getByTestId("grammar-practice-next-btn");
     await expect(nextButton).toBeVisible({ timeout: 10_000 });
-    await framePractice(page, "grammar-practice-next-btn");
+    await framePractice(page, "grammar-practice-progress");
     await sink.shot("grammar-practice-answer");
 
     const complete = page.getByTestId("grammar-practice-complete");
     for (let answered = 0; answered < MAX_ANSWERS; answered++) {
       if (await complete.isVisible()) break;
       if (await nextButton.isVisible()) {
-        await nextButton.click();
+        await nextButton.click({ timeout: 5_000 });
       } else if (!(await clickFirstVisible(page, OPTIONS))) {
         await expect(nextButton).toBeVisible({ timeout: 10_000 });
       }
