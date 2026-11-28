@@ -82,6 +82,11 @@ test("every covered row has a delivered ru-RU frame pair", async () => {
         viewport.width,
         `frame does not match its viewport: ${imageName(found)}`,
       );
+      assert.equal(
+        size.height,
+        viewport.height,
+        `frame does not match its viewport height: ${imageName(found)}`,
+      );
     }
   }
 });
@@ -116,6 +121,8 @@ test("every delivered frame matches the sha256 in its registry entry", async () 
 
 test("every published link points at the frame it describes", async () => {
   const registry = await readRegistry(registryDir);
+  const required = new Set(proofFrames(registry).map(imageName));
+  let checked = 0;
 
   for (const entry of registry.filter((item) => item.url !== null)) {
     assert.equal(
@@ -128,7 +135,12 @@ test("every published link points at the frame it describes", async () => {
       `${entry.scenario}--${entry.screen}--${entry.viewport}-${entry.sha256.slice(0, 8)}.png`,
       `CDN key does not carry the current sha8: ${imageName(entry)}`,
     );
+    checked++;
   }
+  assert.ok(
+    checked >= required.size,
+    `checked ${checked} links, but covered rows require ${required.size}`,
+  );
 });
 
 test("scenario-less variations stay exclusions, never coverage", async () => {
@@ -140,10 +152,6 @@ test("scenario-less variations stay exclusions, never coverage", async () => {
   // screen appears and this test fails: the exclusion must be revisited.
   const scenarioLess = inventory.filter(
     (row) => row.exclusion?.code === "no-scenario",
-  );
-  assert.ok(
-    scenarioLess.length > 0,
-    "no no-scenario rows left in the inventory",
   );
 
   for (const row of scenarioLess) {

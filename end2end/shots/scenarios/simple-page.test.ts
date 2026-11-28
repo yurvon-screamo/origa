@@ -7,20 +7,22 @@ import type { Page } from "@playwright/test";
  * The toast wait is the boundary between a deterministic baseline and a
  * false diff. Playwright itself is the external dependency here: the
  * helper's decisions — give the toast a window to mount, then insist it
- * is gone before the screenshot — are the behaviour under test.
+ * is gone before the screenshot — are the behaviour under test. The fake
+ * locators carry their selector so a wrong target fails the assertion.
  */
+const TOAST = '[data-testid^="toast-"]';
 const calls: string[] = [];
 let toastMounted = true;
 let toastStuck = false;
 
 mock.module("@playwright/test", {
   namedExports: {
-    expect: () => ({
+    expect: (target: { selector: string }) => ({
       toHaveCount: async (
         expected: number,
         options: { timeout: number },
       ): Promise<void> => {
-        calls.push(`count:${expected}:${options.timeout}`);
+        calls.push(`count:${target.selector}:${expected}:${options.timeout}`);
         if (toastStuck) throw new Error("toast still visible");
       },
     }),
@@ -30,21 +32,26 @@ mock.module("@playwright/test", {
 const { waitForSyncToastToDisappear } = await import("./simple-page.ts");
 
 function fakePage(): Page {
-  const locator = {
-    first: () => locator,
-    waitFor: async (options: {
-      state: string;
-      timeout: number;
-    }): Promise<void> => {
-      calls.push(`wait:${options.state}:${options.timeout}`);
-      if (options.state === "visible" && !toastMounted) {
-        throw new Error("no toast appeared within the mount window");
-      }
-    },
-  };
   return {
     locator: (selector: string) => {
       calls.push(`locator:${selector}`);
+      const locator = {
+        selector,
+        first: () => locator,
+        waitFor: async (options: {
+          state: string;
+          timeout: number;
+        }): Promise<void> => {
+          calls.push(`wait:${selector}:${options.state}:${options.timeout}`);
+          if (
+            selector === TOAST &&
+            options.state === "visible" &&
+            !toastMounted
+          ) {
+            throw new Error("no toast appeared within the mount window");
+          }
+        },
+      };
       return locator;
     },
   } as unknown as Page;
@@ -61,12 +68,10 @@ test("the wait gives the toast a mount window before asserting it vanished", asy
 
   await waitForSyncToastToDisappear(fakePage());
 
-  assert.ok(
-    calls.includes('locator:[data-testid^="toast-"]'),
-    "the toast locator was not queried",
+  const mount = calls.findIndex((call) =>
+    call.startsWith(`wait:${TOAST}:visible`),
   );
-  const mount = calls.findIndex((call) => call.startsWith("wait:visible"));
-  const vanish = calls.findIndex((call) => call.startsWith("count:0:"));
+  const vanish = calls.findIndex((call) => call.startsWith(`count:${TOAST}:0`));
   assert.ok(mount >= 0, "the toast was not given a mount window");
   assert.ok(vanish >= 0, "the toast disappearance was not asserted");
   assert.ok(mount < vanish, "the mount wait must precede the vanish check");
@@ -78,7 +83,7 @@ test("a page with no toast still passes the wait", async () => {
   await waitForSyncToastToDisappear(fakePage());
 
   assert.ok(
-    calls.some((call) => call.startsWith("count:0:")),
+    calls.some((call) => call.startsWith(`count:${TOAST}:0`)),
     "the disappearance must still be asserted without a toast",
   );
 });
