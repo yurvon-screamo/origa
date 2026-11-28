@@ -1,12 +1,15 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { crc32 } from "node:zlib";
 
 import {
+  readProof,
   readPngSize,
   repoImageName,
   sha256Hex,
   shotFileName,
   shotKey,
+  stampProof,
 } from "./manifest.ts";
 
 /** Minimal PNG header: signature + IHDR with the given dimensions. */
@@ -80,4 +83,52 @@ test("registry key separates the locales of one screen", () => {
   });
 
   assert.notEqual(ru, en);
+});
+
+/** A structurally valid PNG with no pixels: signature, IHDR, IEND. */
+function minimalPng(): Buffer {
+  const chunk = (type: string, data: Buffer): Buffer => {
+    const result = Buffer.alloc(12 + data.length);
+    result.writeUInt32BE(data.length, 0);
+    result.write(type, 4, "latin1");
+    data.copy(result, 8);
+    result.writeUInt32BE(
+      crc32(result.subarray(4, 8 + data.length)),
+      8 + data.length,
+    );
+    return result;
+  };
+  return Buffer.concat([
+    Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+    chunk("IHDR", Buffer.alloc(13)),
+    chunk("IEND", Buffer.alloc(0)),
+  ]);
+}
+
+test("a proof survives a stamp and read round trip", () => {
+  const proof = { schema: 1 as const, commit: "abc123", screen: "home" };
+  const stamped = stampProof(minimalPng(), proof);
+
+  assert.deepEqual(readProof(stamped), proof);
+  assert.equal(readProof(minimalPng()), null);
+});
+
+test("a damaged proof chunk fails loudly", () => {
+  const stamped = stampProof(minimalPng(), {
+    schema: 1,
+    commit: "abc123",
+    screen: "home",
+  });
+  const damaged = Buffer.from(stamped);
+  damaged[damaged.length - 20] ^= 0xff;
+
+  assert.throws(() => readProof(damaged), /corrupt PNG chunk/);
+});
+
+test("the same pixels with a different commit have a different hash", () => {
+  const png = minimalPng();
+  const first = stampProof(png, { schema: 1, commit: "aaa", screen: "home" });
+  const second = stampProof(png, { schema: 1, commit: "bbb", screen: "home" });
+
+  assert.notEqual(sha256Hex(first), sha256Hex(second));
 });

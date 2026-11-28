@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { crc32 } from "node:zlib";
 
 import type { ViewportTag } from "./viewports.ts";
 
@@ -33,6 +34,79 @@ export interface ShotManifest {
   version: 1;
   label: string;
   entries: ShotEntry[];
+}
+
+/**
+ * Harness-attested facts bound to the pixels, not to the JSON manifest.
+ * Both fields have an independent counterpart at verification time.
+ */
+export interface ShotProof {
+  schema: 1;
+  commit: string;
+  screen: string;
+}
+
+const PROOF_KEYWORD = "origa-proof";
+
+/** Writes the proof chunk immediately before IEND, before hashing the PNG. */
+export function stampProof(png: Buffer, proof: ShotProof): Buffer {
+  const payload = Buffer.concat([
+    Buffer.from(PROOF_KEYWORD, "latin1"),
+    Buffer.from([0]),
+    Buffer.from(JSON.stringify(proof), "utf8"),
+  ]);
+  const chunk = Buffer.alloc(12 + payload.length);
+  chunk.writeUInt32BE(payload.length, 0);
+  chunk.write("tEXt", 4, "latin1");
+  payload.copy(chunk, 8);
+  chunk.writeUInt32BE(
+    crc32(chunk.subarray(4, 8 + payload.length)),
+    8 + payload.length,
+  );
+
+  let offset = 8;
+  while (offset + 12 <= png.length) {
+    const length = png.readUInt32BE(offset);
+    const type = png.toString("latin1", offset + 4, offset + 8);
+    if (type === "IEND") {
+      return Buffer.concat([
+        png.subarray(0, offset),
+        chunk,
+        png.subarray(offset),
+      ]);
+    }
+    offset += 12 + length;
+  }
+  throw new Error("invalid PNG: IEND not found");
+}
+
+/**
+ * Reads the proof chunk; a damaged chunk is an error, never an absence.
+ * Legacy frames without the chunk return null.
+ */
+export function readProof(png: Buffer): ShotProof | null {
+  let offset = 8;
+  while (offset + 12 <= png.length) {
+    const length = png.readUInt32BE(offset);
+    const type = png.toString("latin1", offset + 4, offset + 8);
+    const data = png.subarray(offset + 8, offset + 8 + length);
+    const checksum = png.readUInt32BE(offset + 8 + length);
+    if (crc32(png.subarray(offset + 4, offset + 8 + length)) !== checksum) {
+      throw new Error(`corrupt PNG chunk: ${type}`);
+    }
+    if (type === "tEXt") {
+      const separator = data.indexOf(0);
+      if (
+        separator >= 0 &&
+        data.toString("latin1", 0, separator) === PROOF_KEYWORD
+      ) {
+        return JSON.parse(data.toString("utf8", separator + 1)) as ShotProof;
+      }
+    }
+    if (type === "IEND") break;
+    offset += 12 + length;
+  }
+  return null;
 }
 
 /** SHA-256 of a buffer, hex encoded. */
