@@ -103,9 +103,11 @@ fn hiragana_reading(token: &TokenInfo) -> String {
 fn is_writing_list(text: &str) -> bool {
     let parts: Vec<&str> = text.split_whitespace().collect();
     parts.len() >= 2
-        && parts
-            .iter()
-            .all(|p| p.chars().count() <= 12 && p.chars().all(|c| c.is_japanese()))
+        && parts.iter().all(|p| {
+            p.chars().count() <= 12
+                && p.chars()
+                    .all(|c| c.is_hiragana() || c.is_katakana() || c.is_kanji())
+        })
 }
 
 /// Точные формы глагола с заданной словарной основой: прошедшее, отрицание,
