@@ -1,23 +1,17 @@
 //! Minimal WASM tracing layer with level-aware console routing.
 //!
-//! Replaces the `tracing-wasm` crate (0.2.1), which routes ALL levels —
-//! including ERROR — through `console.log`. That is why native `error!`
-//! escalations never reached Sentry (audit: task uwuwu#1454): the console
-//! capture path keys on `console.error`, and this crate never produced one.
+//! Replaces `tracing-wasm` (0.2.1), which routed every level through
+//! `console.log` — the dead delivery story (why native `error!` events
+//! never reached Sentry) lives in the ADR-036 addendum.
 //!
 //! Routing (see [`ConsoleRoute`]):
-//! - ERROR → `console.error` **+ direct Sentry capture** via
-//!   `crate::sentry::capture_exception` — the eager `captureException`
-//!   export is the one delivery surface that survived every SDK major
-//!   (proven in production by the panic bridge), unlike the
-//!   `captureConsoleIntegration` chunk, which silently stopped being
-//!   eagerly exported in SDK v10.
-//! - WARN → `console.warn` — breadcrumbs via the eager Breadcrumbs
-//!   integration.
+//! - ERROR → `console.error` + direct Sentry capture via
+//!   `crate::sentry::capture_exception`.
+//! - WARN → `console.warn` — breadcrumbs.
 //! - INFO / DEBUG → `console.info` / `console.debug`.
 //!
-//! Max level is pinned per build profile exactly like the previous setup:
-//! dev = DEBUG, release = INFO (see `lib.rs::init_tracing`).
+//! Max level is pinned per build profile: dev = DEBUG, release = INFO
+//! (see `lib.rs::init_tracing`).
 
 use tracing::Level;
 use tracing_subscriber::Layer;
@@ -69,24 +63,25 @@ pub(crate) fn is_browser_online() -> bool {
     }
 }
 
-/// Severity verdict for a failed background network operation
+/// Severity verdict for a failed load-bearing network operation
 /// (ADR-079-style invariant for the network path): a failure while online
-/// of a load-bearing fetch is an incident (Sentry event); offline failures
-/// and best-effort steps are expected degradation (breadcrumbs only).
+/// is an incident (Sentry event); an offline failure is expected
+/// degradation (breadcrumbs only). Best-effort steps stay `warn!` by their
+/// call sites, without this table.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub(crate) enum NetworkSeverity {
-    /// Online failure of a load-bearing fetch — `error!`.
+    /// Online failure — `error!`.
     Error,
-    /// Offline, or a best-effort step — `warn!`.
+    /// Offline — `warn!`.
     Warn,
 }
 
-/// Pure severity table for background network failures.
-pub(crate) fn network_failure_severity(best_effort: bool, browser_online: bool) -> NetworkSeverity {
-    if best_effort || !browser_online {
-        NetworkSeverity::Warn
-    } else {
+/// Pure severity table for load-bearing network failures.
+pub(crate) fn network_failure_severity(browser_online: bool) -> NetworkSeverity {
+    if browser_online {
         NetworkSeverity::Error
+    } else {
+        NetworkSeverity::Warn
     }
 }
 
@@ -149,15 +144,23 @@ impl<S: tracing::Subscriber> Layer<S> for ConsoleSentryLayer {
 
         let mut visitor = FieldVisitor::default();
         event.record(&mut visitor);
-        let text = visitor.render();
+        let mut text = visitor.render();
+
+        // Source locator: the Sentry event's stack points at this layer's
+        // capture call, not at the `error!` site — without the locator the
+        // originating line is unrecoverable from the event (uwuwu#1454).
+        let meta = event.metadata();
+        match (meta.file(), meta.line()) {
+            (Some(f), Some(l)) => text.push_str(&format!(" [{f}:{l}]")),
+            (Some(f), None) => text.push_str(&format!(" [{f}]")),
+            _ => {},
+        }
 
         match route {
             ConsoleRoute::Error => {
                 web_sys::console::error_1(&JsValue::from_str(&text));
-                // The revived channel: a real Error object goes to Sentry's
-                // eager captureException, so the event carries a stack for
-                // grouping — same contract the panic bridge proves in
-                // production (RUST-Q/P symbolized frames).
+                // A real Error object via the eager captureException export
+                // → the event carries a stack for grouping (ADR-036).
                 crate::sentry::capture_exception(&text);
             },
             ConsoleRoute::Warn => web_sys::console::warn_1(&JsValue::from_str(&text)),
@@ -183,22 +186,11 @@ mod tests {
     }
 
     /// Severity table pinned (ADR-079-style invariant, network path):
-    /// online + load-bearing = error; offline or best-effort = warn.
+    /// online = error; offline = warn (best-effort stays warn at call sites).
     #[test]
     fn network_severity_table_is_pinned() {
-        // Online, load-bearing → incident.
-        assert_eq!(
-            network_failure_severity(false, true),
-            NetworkSeverity::Error
-        );
-        // Offline — expected degradation regardless of weight.
-        assert_eq!(
-            network_failure_severity(false, false),
-            NetworkSeverity::Warn
-        );
-        // Best-effort steps stay breadcrumbs even when online.
-        assert_eq!(network_failure_severity(true, true), NetworkSeverity::Warn);
-        assert_eq!(network_failure_severity(true, false), NetworkSeverity::Warn);
+        assert_eq!(network_failure_severity(true), NetworkSeverity::Error);
+        assert_eq!(network_failure_severity(false), NetworkSeverity::Warn);
     }
 
     /// Field rendering: message first, structured fields appended.
