@@ -31,6 +31,20 @@ When("пользователь возвращает окно до десктоп
   await page.setViewportSize(DESKTOP);
 });
 
+When("пользователь расширяет окно до 640px", async ({ page }) => {
+  await page.setViewportSize({ width: 640, height: 844 });
+});
+
+// The compact density is scoped to max-width:639px. At the very next pixel
+// the header's own `sm:gap-4` wins again: pin the upper bound so widening
+// the media query cannot silently leak compact density into the 640–767px
+// band that the task deliberately leaves untouched.
+Then("компактная плотность шапки слов выключена", async ({ page }) => {
+  const wordsPage = new WordsPage(page);
+  await expect(wordsPage.wordsActions).toBeVisible();
+  await expect(wordsPage.wordsActions).toHaveCSS("gap", "16px");
+});
+
 When(
   "пользователь выбирает язык интерфейса {string}",
   async ({ page }, language: string) => {
