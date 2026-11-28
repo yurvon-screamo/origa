@@ -374,6 +374,9 @@ pub fn start_dictionary_loading(
             }
         });
 
+        // Read-only duplicate scan: reports exact-key duplicates; never saves.
+        crate::loaders::word_identity_scan::spawn(repository.clone());
+
         // Phase C: jlpt_content (depends on kanji + grammar)
         if let Err(e) = load_with_retry(load_jlpt_content, 1).await {
             tracing::error!("Failed to load jlpt_content: {e}");

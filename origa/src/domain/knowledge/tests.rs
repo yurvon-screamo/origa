@@ -1639,6 +1639,31 @@ mod companion_vocab_cards {
     }
 
     #[test]
+    fn create_companion_vocab_cards_does_not_duplicate_an_existing_lemma_card() {
+        real_dictionaries_or_skip!();
+
+        // Arrange
+        let mut knowledge_set = KnowledgeSet::new();
+        let lemma_card =
+            VocabularyCard::from_known_word("食べる", &NativeLanguage::Russian).unwrap();
+        knowledge_set
+            .create_card(Card::Vocabulary(lemma_card))
+            .unwrap();
+
+        // Act
+        let created = knowledge_set.create_companion_vocab_cards("食", &NativeLanguage::Russian);
+
+        // Assert
+        assert!(!created.is_empty());
+        let matching = knowledge_set
+            .study_cards()
+            .values()
+            .filter(|study| matches!(study.card(), Card::Vocabulary(card) if card.word().text() == "食べる"))
+            .count();
+        assert_eq!(matching, 1);
+    }
+
+    #[test]
     fn create_companion_vocab_cards_creates_fewer_than_max() {
         real_dictionaries_or_skip!();
 

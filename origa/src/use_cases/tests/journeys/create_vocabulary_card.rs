@@ -61,6 +61,33 @@ async fn create_vocabulary_card_duplicate_returns_skipped() {
 }
 
 #[tokio::test]
+async fn create_vocabulary_card_collapses_script_and_inflection_variants() {
+    real_dictionaries_or_skip!();
+    // Arrange
+    let repo = create_repo();
+    let use_case = CreateVocabularyCardUseCase::new(&repo);
+
+    // Act
+    let hiragana = use_case.execute("たべる".to_string()).await.unwrap();
+    let kanji = use_case.execute("食べる".to_string()).await.unwrap();
+    let inflected = use_case.execute("たべました".to_string()).await.unwrap();
+
+    // Assert
+    assert_eq!(hiragana.created_cards.len(), 1);
+    assert_eq!(kanji.created_cards.len(), 0);
+    assert_eq!(inflected.created_cards.len(), 0);
+    assert_eq!(kanji.skipped_duplicates.len(), 1);
+    assert_eq!(inflected.skipped_duplicates.len(), 1);
+    let user = repo.get_current_user().await.unwrap().unwrap();
+    let cards = user.knowledge_set().study_cards();
+    assert_eq!(cards.len(), 1);
+    assert_eq!(
+        cards.values().next().unwrap().card().content_key(),
+        "食べる"
+    );
+}
+
+#[tokio::test]
 async fn create_vocabulary_card_skips_non_japanese_text() {
     real_dictionaries_or_skip!();
     let repo = create_repo();

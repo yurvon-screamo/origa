@@ -56,8 +56,9 @@ pub use knowledge::{
     ExampleCard, ExampleKanjiWord, GrammarInfo, GrammarQuizCard, GrammarRuleCard, InsightsLog,
     KanjiCard, KnowledgeSet, LessonCard, LessonCardView, LessonData, LessonEmptyDiagnosis,
     LessonViewGenerator, MAX_LESSON_SIZE, MultiQuizResult, PhraseCard, QuizCard, QuizMode,
-    QuizOption, StudyCard, VocabularyCard, YesNoCard, diagnose_empty_lesson,
-    estimate_completion_date, install_precompute_for_cards,
+    QuizOption, StudyCard, VocabularyCard, WordIdentityScanGroup, WordIdentityScanReport,
+    YesNoCard, diagnose_empty_lesson, estimate_completion_date, install_precompute_for_cards,
+    scan_duplicate_cards,
 };
 pub(crate) use knowledge::{MAX_COMPANION_WORDS, distribute_new_cards, jlpt_sort_key};
 pub use stats::{RatingRatio, TodayOverview, compute_rating_ratio, compute_today_overview};

@@ -155,6 +155,7 @@ mod wasm_tests {
 
     #[wasm_bindgen_test::wasm_bindgen_test]
     async fn file_asr_invoke_failure_emits_error_event_and_falls_back() {
+        let _serial = crate::core::device_ai::test_serial_lock().lock().await;
         log_capture::install();
         device_ai::reset_cached_capabilities();
         // uwuwu#1098: pin a plugin platform — see the module docs above.
@@ -182,6 +183,7 @@ mod wasm_tests {
 
     #[wasm_bindgen_test::wasm_bindgen_test]
     async fn live_asr_invoke_failure_emits_error_event_and_falls_back() {
+        let _serial = crate::core::device_ai::test_serial_lock().lock().await;
         log_capture::install();
         device_ai::reset_cached_capabilities();
         // uwuwu#1098: pin a plugin platform — see the module docs above.
@@ -209,6 +211,7 @@ mod wasm_tests {
 
     #[wasm_bindgen_test::wasm_bindgen_test]
     async fn live_asr_no_speech_stays_info_and_routes_to_empty_string() {
+        let _serial = crate::core::device_ai::test_serial_lock().lock().await;
         log_capture::install();
         device_ai::reset_cached_capabilities();
         // uwuwu#1098: pin a plugin platform — see the module docs above.
