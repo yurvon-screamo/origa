@@ -67,15 +67,18 @@ export class ProfilePage extends BasePage {
     await expect(this.profileContent).toBeVisible();
   }
 
-  async selectLanguage(lang: "english" | "russian"): Promise<void> {
+  async selectLanguage(
+    lang: "english" | "russian" | "vietnamese",
+  ): Promise<void> {
     // Scope to the profile language toggle to avoid matching the same
     // testid on other mounted language toggles (login, onboarding).
     const toggle = this.profileContent.getByTestId("profile-lang-toggle");
-    const btn =
-      lang === "english"
-        ? toggle.getByTestId("lang-toggle-en")
-        : toggle.getByTestId("lang-toggle-ru");
-    await btn.click();
+    const slugs = {
+      english: "en",
+      russian: "ru",
+      vietnamese: "vi",
+    } as const;
+    await toggle.getByTestId(`lang-toggle-${slugs[lang]}`).click();
   }
 
   async selectDailyLoad(

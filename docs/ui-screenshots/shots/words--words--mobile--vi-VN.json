@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "words",
+  "screen": "words",
+  "route": "/words",
+  "viewport": "mobile",
+  "locale": "vi-VN",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 295934,
+  "sha256": "121e1cab521ff464abab0934038ebf73a5a552644ad242be20f33cf2adb25640",
+  "capturedAt": "2026-11-28T16:34:10.639Z",
+  "commit": "b8b559f798fb733e3ae4fe962040b7bdc74857d1",
+  "baseURL": "http://localhost:1420",
+  "cdnBaseUrl": "http://localhost:18123",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
+}

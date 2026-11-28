@@ -15,6 +15,7 @@ use origa::use_cases::AnalyzedWord;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_test::*;
 
+use crate::i18n::Locale;
 use crate::loaders::dictionary::ensure_tokenizer_loaded;
 use crate::loaders::example_loader::WordExample;
 use crate::pages::words::WordsHeader;
@@ -97,6 +98,29 @@ async fn words_header_renders_title_and_actions() {
         actions.class_list().contains("max-md:justify-between"),
         "actions wrapper must spread the tab strip across its row"
     );
+}
+
+/// Only the locales with wide Latin tab labels compact the strip. RU/KO
+/// keep the canonical button density and the exact #932 class string.
+#[wasm_bindgen_test]
+fn words_actions_class_compacts_only_wide_label_locales() {
+    for (locale, compact) in [
+        (Locale::en, true),
+        (Locale::vi, true),
+        (Locale::ru, false),
+        (Locale::ko, false),
+    ] {
+        let class = super::header::words_actions_class(locale);
+        assert!(
+            class.contains("max-md:basis-full") && class.contains("max-md:justify-between"),
+            "locale {locale:?} must keep the deliberate two-row grid: {class}"
+        );
+        assert_eq!(
+            class.contains("words-actions-compact"),
+            compact,
+            "locale {locale:?} must use the compact strip: {class}"
+        );
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════

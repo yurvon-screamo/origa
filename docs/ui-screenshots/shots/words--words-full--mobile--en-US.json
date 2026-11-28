@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "words",
+  "screen": "words-full",
+  "route": "/words",
+  "viewport": "mobile",
+  "locale": "en-US",
+  "width": 390,
+  "height": 844,
+  "fullPage": true,
+  "bytes": 294697,
+  "sha256": "08e1b176d5629a90c6933070d2eaf31855d9825e85864835f202461ff07020f0",
+  "capturedAt": "2026-11-28T16:37:24.708Z",
+  "commit": "b8b559f798fb733e3ae4fe962040b7bdc74857d1",
+  "baseURL": "http://localhost:1420",
+  "cdnBaseUrl": "http://localhost:18123",
+  "url": null,
+  "uploadedSha256": null,
+  "uploadedAt": null
+}

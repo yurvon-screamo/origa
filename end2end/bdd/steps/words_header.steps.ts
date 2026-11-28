@@ -1,6 +1,6 @@
 import { expect } from "@playwright/test";
-import { Given, When, Then } from "../fixtures";
-import { WordsPage } from "../../pages";
+import { Given, When, Then, test } from "../fixtures";
+import { ProfilePage, WordsPage } from "../../pages";
 
 /**
  * The words header layout contract (bug: «заголовок/табы/кнопка разъехались
@@ -29,6 +29,129 @@ When("пользователь сужает окно до мобильной ш�
 
 When("пользователь возвращает окно до десктопной ширины", async ({ page }) => {
   await page.setViewportSize(DESKTOP);
+});
+
+When("пользователь расширяет окно до 640px", async ({ page }) => {
+  await page.setViewportSize({ width: 640, height: 844 });
+});
+
+// The compact density is scoped to max-width:639px. The wrapper's `gap`
+// alone cannot pin that bound: at 640px the header's later `sm:gap-4` wins
+// the equal-specificity cascade regardless of the media query, so 16px
+// stays green even if the media is widened to 767px. The observable leak
+// is the BUTTON padding — `.words-actions-compact .btn` (0,2,0) would
+// override `.btn` and shrink 32px to 12px in the 640–767px band that the
+// task deliberately leaves untouched. Pin the padding; keep gap as a
+// secondary check of the header's own desktop density.
+Then("компактная плотность шапки слов выключена", async ({ page }) => {
+  const wordsPage = new WordsPage(page);
+  await expect(wordsPage.wordsActions).toBeVisible();
+  await expect(wordsPage.addButton).toHaveCSS("padding-left", "32px");
+  await expect(wordsPage.wordsActions).toHaveCSS("gap", "16px");
+});
+
+When(
+  "пользователь выбирает язык интерфейса {string}",
+  async ({ page }, language: string) => {
+    if (language !== "english" && language !== "vietnamese") {
+      throw new Error(`Unsupported UI language in this scenario: ${language}`);
+    }
+    const profilePage = new ProfilePage(page);
+    await profilePage.goto();
+    await profilePage.selectLanguage(language);
+  },
+);
+
+Then("язык {string} применён", async ({ page }, language: string) => {
+  const profilePage = new ProfilePage(page);
+  const slug = language === "english" ? "en" : "vi";
+  const toggle = page.getByTestId("profile-lang-toggle");
+  await expect(toggle.getByTestId(`lang-toggle-${slug}`)).toHaveAttribute(
+    "aria-current",
+    "true",
+  );
+  // Wait for SAVED, not the transient SAVING state: the words route reads
+  // the profile back, so a half-finished save reverts the UI to RU.
+  await expect
+    .poll(async () => (await profilePage.autosaveStatus.textContent()) ?? "", {
+      timeout: 15_000,
+      intervals: [50, 100, 250],
+    })
+    .toMatch(/saved|сохранено|đã lưu/i);
+});
+
+Then("лейбл {string} виден в шапке слов", async ({ page }, label: string) => {
+  const wordsPage = new WordsPage(page);
+  await expect(wordsPage.wordsActions).toContainText(label, {
+    timeout: 10_000,
+  });
+  // textContent survives ellipsis clipping, so check the rendered width too.
+  const labels = await wordsPage.wordsActions
+    .locator(".btn-text")
+    .evaluateAll((nodes) =>
+      nodes.map((node) => ({
+        text: node.textContent?.trim() ?? "",
+        clipped: node.scrollWidth > node.clientWidth + 1,
+      })),
+    );
+  expect(
+    labels.filter((item) => item.clipped),
+    `лейбл "${label}" не должен обрезаться: ${JSON.stringify(labels)}`,
+  ).toEqual([]);
+});
+
+Then("полоса действий шапки слов помещается в карточку", async ({ page }) => {
+  const wordsPage = new WordsPage(page);
+  const cardBox = await wordsPage.wordsCard.boundingBox();
+  const actionsBox = await wordsPage.wordsActions.boundingBox();
+  expect(cardBox, "words-card должен быть отрендерен").not.toBeNull();
+  expect(actionsBox, "words-actions должен быть отрендерен").not.toBeNull();
+  // Lock the cascade: `gap-2` from PageHeader has equal specificity and is
+  // declared later in input.css, so a moved rule would silently die.
+  await expect(wordsPage.wordsActions).toHaveCSS("gap", "4px");
+
+  // The diagnostic attachment keeps the measured cause in the test run:
+  // a bare "overflow 21px" does not say whether the wrapper or the last
+  // button crosses the card edge.
+  const styles = await wordsPage.wordsActions.evaluate((element) => {
+    const computed = getComputedStyle(element);
+    return {
+      flexBasis: computed.flexBasis,
+      minWidth: computed.minWidth,
+      gap: computed.gap,
+      classes: element.className,
+    };
+  });
+  const diagnosticSummary = JSON.stringify({
+    cardBox,
+    actionsBox,
+    styles,
+  });
+  await test.info().attach("words-header-diagnostics", {
+    body: diagnosticSummary,
+    contentType: "application/json",
+  });
+
+  const cardRight = cardBox!.x + cardBox!.width;
+  const buttons = [
+    ["sets", wordsPage.setsButton],
+    ["phrases", wordsPage.phrasesButton],
+    ["examples", wordsPage.examplesButton],
+    ["add", wordsPage.addButton],
+  ] as const;
+  for (const [name, button] of buttons) {
+    const box = await button.boundingBox();
+    expect(box, `${name} button должен быть отрендерен`).not.toBeNull();
+    const overflow = box!.x + box!.width - cardRight;
+    expect(
+      box!.x + box!.width,
+      `${name} button выходит за words-card на ${overflow.toFixed(1)}px; ${diagnosticSummary}`,
+    ).toBeLessThanOrEqual(cardRight + 1);
+  }
+  expect(
+    actionsBox!.height,
+    "полоса действий остаётся одной строкой",
+  ).toBeLessThanOrEqual(48);
 });
 
 Then(
