@@ -67,15 +67,14 @@ export class ProfilePage extends BasePage {
     await expect(this.profileContent).toBeVisible();
   }
 
-  async selectLanguage(lang: "english" | "russian"): Promise<void> {
+  async selectLanguage(
+    lang: "english" | "russian" | "vietnamese",
+  ): Promise<void> {
     // Scope to the profile language toggle to avoid matching the same
     // testid on other mounted language toggles (login, onboarding).
     const toggle = this.profileContent.getByTestId("profile-lang-toggle");
-    const btn =
-      lang === "english"
-        ? toggle.getByTestId("lang-toggle-en")
-        : toggle.getByTestId("lang-toggle-ru");
-    await btn.click();
+    const slug = lang === "english" ? "en" : lang === "russian" ? "ru" : "vi";
+    await toggle.getByTestId(`lang-toggle-${slug}`).click();
   }
 
   async selectDailyLoad(
@@ -135,6 +134,6 @@ export class ProfilePage extends BasePage {
         timeout: 15_000,
         intervals: [50, 100, 250],
       })
-      .toMatch(/saved|сохранено|сохранение|saving/i);
+      .toMatch(/saved|сохранено|сохранение|saving|đã lưu|đang lưu/i);
   }
 }

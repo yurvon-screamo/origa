@@ -320,6 +320,21 @@ input[type="submit"],
   }
 }
 
+/* Wide EN/VI tab labels made the words action strip wider than the 342px
+   card content at 390px, pushing "+" past the card edge (uwuwu#413).
+   Compact only that strip in the mobile band, reusing the small-button
+   horizontal padding and the 4px spacing step; RU/KO keep the canon. */
+@media (max-width: 639px) {
+  .words-actions-compact {
+    gap: 4px;
+  }
+
+  .words-actions-compact .btn {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
 .btn-lg {
   padding: 20px 40px;
   font-size: var(--text-label);

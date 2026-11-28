@@ -1,6 +1,6 @@
 import { expect } from "@playwright/test";
-import { Given, When, Then } from "../fixtures";
-import { WordsPage } from "../../pages";
+import { Given, When, Then, test } from "../fixtures";
+import { ProfilePage, WordsPage } from "../../pages";
 
 /**
  * The words header layout contract (bug: «заголовок/табы/кнопка разъехались
@@ -29,6 +29,78 @@ When("пользователь сужает окно до мобильной ш�
 
 When("пользователь возвращает окно до десктопной ширины", async ({ page }) => {
   await page.setViewportSize(DESKTOP);
+});
+
+When(
+  "пользователь выбирает язык интерфейса {string}",
+  async ({ page }, language: string) => {
+    if (language !== "english" && language !== "vietnamese") {
+      throw new Error(`Unsupported UI language in this scenario: ${language}`);
+    }
+    const profilePage = new ProfilePage(page);
+    await profilePage.goto();
+    await profilePage.expectProfileVisible();
+    await profilePage.selectLanguage(language);
+    await profilePage.waitForAutoSave();
+  },
+);
+
+Then("лейбл {string} виден в шапке слов", async ({ page }, label: string) => {
+  const wordsPage = new WordsPage(page);
+  await expect(wordsPage.wordsActions).toContainText(label, {
+    timeout: 10_000,
+  });
+});
+
+Then("полоса действий шапки слов помещается в карточку", async ({ page }) => {
+  const wordsPage = new WordsPage(page);
+  const cardBox = await wordsPage.wordsCard.boundingBox();
+  const actionsBox = await wordsPage.wordsActions.boundingBox();
+  expect(cardBox, "words-card должен быть отрендерен").not.toBeNull();
+  expect(actionsBox, "words-actions должен быть отрендерен").not.toBeNull();
+
+  // The diagnostic attachment keeps the measured cause in the test run:
+  // a bare "overflow 21px" does not say whether the wrapper or the last
+  // button crosses the card edge.
+  const styles = await wordsPage.wordsActions.evaluate((element) => {
+    const computed = getComputedStyle(element);
+    return {
+      flexBasis: computed.flexBasis,
+      minWidth: computed.minWidth,
+      gap: computed.gap,
+      classes: element.className,
+    };
+  });
+  const diagnosticSummary = JSON.stringify({
+    cardBox,
+    actionsBox,
+    styles,
+  });
+  await test.info().attach("words-header-diagnostics", {
+    body: diagnosticSummary,
+    contentType: "application/json",
+  });
+
+  const cardRight = cardBox!.x + cardBox!.width;
+  const buttons = [
+    ["sets", wordsPage.setsButton],
+    ["phrases", wordsPage.phrasesButton],
+    ["examples", wordsPage.examplesButton],
+    ["add", wordsPage.addButton],
+  ] as const;
+  for (const [name, button] of buttons) {
+    const box = await button.boundingBox();
+    expect(box, `${name} button должен быть отрендерен`).not.toBeNull();
+    const overflow = box!.x + box!.width - cardRight;
+    expect(
+      box!.x + box!.width,
+      `${name} button выходит за words-card на ${overflow.toFixed(1)}px; ${diagnosticSummary}`,
+    ).toBeLessThanOrEqual(cardRight + 1);
+  }
+  expect(
+    actionsBox!.height,
+    "полоса действий остаётся одной строкой",
+  ).toBeLessThanOrEqual(48);
 });
 
 Then(

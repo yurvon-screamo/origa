@@ -1,8 +1,19 @@
 use super::add_words_preview_modal::AddWordsPreviewModal;
-use crate::i18n::{t, use_i18n};
+use crate::i18n::{Locale, t, use_i18n};
 use crate::ui_components::{Button, ButtonVariant, PageHeader};
 use leptos::prelude::*;
 use leptos_router::hooks::use_navigate;
+
+/// The words action strip keeps the deliberate two-row grid from #932 for
+/// every locale. Only EN/VI need the compact density: their tab labels are
+/// wider than the 342px card content at 390px (uwuwu#413).
+pub(crate) fn words_actions_class(locale: Locale) -> String {
+    let compact = match locale {
+        Locale::en | Locale::vi => " words-actions-compact",
+        Locale::ru | Locale::ko => "",
+    };
+    format!("max-md:basis-full max-md:justify-between{compact}")
+}
 
 #[component]
 pub fn WordsHeader(refresh_trigger: RwSignal<u32>) -> impl IntoView {
@@ -22,7 +33,13 @@ pub fn WordsHeader(refresh_trigger: RwSignal<u32>) -> impl IntoView {
             // their own full-width row as a tab strip (deliberate grid);
             // above 768px the header stays one line. Pages with fewer
             // actions keep the natural wrap of #823.
-            actions_class="max-md:basis-full max-md:justify-between".to_string()
+            //
+            // EN/VI tab labels are wider than RU/KO. On a 390px viewport
+            // the strip's min-content width exceeded the 342px card
+            // content and the add button crossed the card edge (uwuwu#413).
+            // Only those locales compact the strip; RU/KO keep the
+            // canonical button density.
+            actions_class=Signal::derive(move || words_actions_class(i18n.get_locale()))
         >
             <Button
                 variant=ButtonVariant::Ghost
