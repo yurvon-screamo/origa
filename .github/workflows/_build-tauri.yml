@@ -51,6 +51,11 @@ on:
                 required: false
             SCCACHE_S3_SECRET_KEY:
                 required: false
+            # uwuwu#1454 (5b/5c): debug-files upload to Sentry. Optional — the
+            # upload steps soft-skip when empty (secret set in this task; the
+            # Deployment wiki documents the key name).
+            sentry_auth_token:
+                required: false
         outputs:
             windows-signature:
                 value: ${{ jobs.build-windows.outputs.signature }}
