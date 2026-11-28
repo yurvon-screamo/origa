@@ -271,3 +271,35 @@ test("owner-question exclusions get their own report block", () => {
   assert.match(report, /Вопросы владельцу:/);
   assert.match(report, /нужен дискриминатор/);
 });
+
+test("a no-scenario exclusion needs no flag or file source", async () => {
+  const issues = await checkStatic(
+    await staticWithRows([
+      row({
+        status: "excluded",
+        exclusion: {
+          code: "no-scenario",
+          reason: "ни один сценарий не испускает экран",
+        },
+      }),
+    ]),
+  );
+  assert.equal(
+    issues.some((issue) => issue.problem.includes("needs a flag or file")),
+    false,
+  );
+});
+
+test("a no-scenario exclusion is not printed as an open owner question", () => {
+  const item = row({
+    id: "test:no-scenario",
+    status: "excluded",
+    exclusion: {
+      code: "no-scenario",
+      reason: "variant without a scenario",
+    },
+  });
+  const report = formatCoverageReport([item], []);
+  assert.doesNotMatch(report, /Вопросы владельцу:/);
+  assert.match(report, /excluded test:no-scenario — no-scenario:/);
+});
