@@ -377,7 +377,13 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "phrase-dash-run",
     screens: ["phrases-list-clean", "lesson-phrase-question-clean"],
     viewports: BOTH,
-    status: "gap",
+    status: "excluded",
+    exclusion: {
+      code: "owner-question",
+      reason:
+        "сид phrase-карты оставляет приложение на boot splash; поверхность урока недостижима — отдельная задача, #1753",
+      source: "phrase_card_item",
+    },
   },
   {
     id: "variation:acquaintance-word-presentation",
@@ -477,7 +483,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "lesson-example-audio",
     screens: ["example-audio-question"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "variation:lesson-phrase-listen",
@@ -487,7 +493,13 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "lesson-phrase-listen",
     screens: ["phrase-listen-question"],
     viewports: BOTH,
-    status: "gap",
+    status: "excluded",
+    exclusion: {
+      code: "owner-question",
+      reason:
+        "PhraseListen не появляется при due-фразах; отдельная задача на приложенческий стоп, #1753",
+      source: "phrase-audio-player",
+    },
   },
   {
     id: "variation:lesson-audio-recall",
@@ -497,7 +509,7 @@ export const inventory: readonly CoverageRow[] = [
     scenario: "lesson-audio-recall",
     screens: ["audio-recall-question", "audio-recall-answer"],
     viewports: BOTH,
-    status: "gap",
+    status: "covered",
   },
   {
     id: "variation:lesson-quiz-single",
