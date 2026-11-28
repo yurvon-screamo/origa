@@ -26,29 +26,69 @@ async function framePractice(page: Page, testId: string): Promise<void> {
   await expect(marker).toBeInViewport();
 }
 
-/** Resolves when every option has finished its answer-colour transition. */
-function optionsSettled(page: Page): Promise<void> {
-  return page
-    .locator('[data-testid^="grammar-practice-option-"]')
-    .evaluateAll((elements) =>
-      Promise.all(
-        elements.map(
-          (element) =>
-            new Promise<void>((resolve) => {
-              const timer = setTimeout(resolve, 1_000);
-              element.addEventListener(
-                "transitionend",
-                () => {
-                  clearTimeout(timer);
-                  resolve();
-                },
-                { once: true },
-              );
+/** The answer frame waits for the options to reach their final colours. */
+async function optionsSettled(page: Page): Promise<void> {
+  await expect
+    .poll(
+      async () =>
+        page
+          .locator('[data-testid^="grammar-practice-option-"]')
+          .evaluateAll((elements) =>
+            elements.every((element) => {
+              const style = getComputedStyle(element);
+              if (element.classList.contains("quiz-option-dimmed")) {
+                return Math.abs(Number(style.opacity) - 0.5) < 0.01;
+              }
+              if (
+                element.classList.contains("quiz-option-correct") ||
+                element.classList.contains("quiz-option-wrong")
+              ) {
+                const variable = element.classList.contains(
+                  "quiz-option-correct",
+                )
+                  ? "--success"
+                  : "--error";
+                const hex = getComputedStyle(document.documentElement)
+                  .getPropertyValue(variable)
+                  .trim();
+                const expected = `rgb(${parseInt(hex.slice(1, 3), 16)}, ${parseInt(hex.slice(3, 5), 16)}, ${parseInt(hex.slice(5, 7), 16)})`;
+                return style.color === expected;
+              }
+              return false;
             }),
-        ),
-      ),
+          ),
+      { timeout: 5_000 },
     )
-    .then(() => undefined);
+    .toBe(true);
+}
+
+/** The question frame waits for the mobile tab underline to stop moving. */
+async function tabsSettled(page: Page): Promise<void> {
+  await expect
+    .poll(
+      async () =>
+        page.evaluate(() => {
+          const scale = (testId: string) => {
+            const element = document.querySelector(
+              '[data-testid="' + testId + '"]',
+            );
+            if (!element) return null;
+            const transform = getComputedStyle(element, "::after").transform;
+            const matrix = transform.match(/matrix\(([^)]+)\)/);
+            return matrix ? Number(matrix[1].split(",")[0]) : null;
+          };
+          const active = scale("grammar-detail-tabs-practice");
+          const inactive = scale("grammar-detail-tabs-overview");
+          return (
+            active !== null &&
+            inactive !== null &&
+            Math.abs(active - 1) < 0.01 &&
+            Math.abs(inactive) < 0.01
+          );
+        }),
+      { timeout: 5_000 },
+    )
+    .toBe(true);
 }
 
 /**
@@ -76,6 +116,7 @@ export const grammarDetailScenario: ShotScenario = {
     const practiceTab = page.getByTestId("grammar-detail-tabs-practice");
     if (await practiceTab.isVisible().catch(() => false)) {
       await practiceTab.click();
+      await tabsSettled(page);
     }
     await expect(
       page
@@ -97,9 +138,8 @@ export const grammarDetailScenario: ShotScenario = {
     await framePractice(page, "grammar-practice-progress");
     await sink.shot("grammar-practice-question");
 
-    const settled = optionsSettled(page);
     await clickFirstVisible(page, OPTIONS);
-    await settled;
+    await optionsSettled(page);
     const nextButton = page.getByTestId("grammar-practice-next-btn");
     await expect(nextButton).toBeVisible({ timeout: 10_000 });
     await framePractice(page, "grammar-practice-progress");
