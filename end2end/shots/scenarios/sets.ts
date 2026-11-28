@@ -34,6 +34,12 @@ export const setsScenario: ShotScenario = {
     await expect(page.getByTestId("sets-import-drawer")).toBeVisible({
       timeout: 15_000,
     });
+    // The drawer mounts with a spinner; its preview content arrives
+    // later. Frame the found words, not the loading state.
+    await expect(page.getByTestId("sets-drawer-found")).toBeVisible({
+      timeout: 60_000,
+    });
+    await page.waitForTimeout(300);
     await sink.shot("sets-import-found");
   },
 };

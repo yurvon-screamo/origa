@@ -137,6 +137,14 @@ export async function captureReviewBody(
     // cannot reveal even its FIRST card collected nothing at all —
     // that is a broken selector, and it must fail loudly instead of
     // silently shrinking the coverage.
+    // A quiz reveals itself by clicking an option. The frame must
+    // show the options, so take it before that click; the other card
+    // kinds reveal with a separate button and are framed afterwards.
+    if (kind === "quiz") {
+      await page.waitForTimeout(700);
+      await sink.shot(`review-body-quiz-${card}`);
+      captured += 1;
+    }
     const revealed = await clickFirstVisible(page, REVEALS, 3_000).catch(
       () => null,
     );
@@ -148,9 +156,11 @@ export async function captureReviewBody(
       }
       break;
     }
-    await page.waitForTimeout(700);
-    await sink.shot(`review-body-${kind}-${card}`);
-    captured += 1;
+    if (kind !== "quiz") {
+      await page.waitForTimeout(700);
+      await sink.shot(`review-body-${kind}-${card}`);
+      captured += 1;
+    }
     const advanced = await clickFirstVisible(page, ADVANCES, 3_000).catch(
       () => null,
     );

@@ -26,14 +26,14 @@ export const homeAccuracyChartScenario: ShotScenario = {
     const chart = page.getByTestId("home-accuracy-chart-chart");
     await expect(chart).toBeVisible({ timeout: 120_000 });
 
-    // Frame the whole accordion: its header at the top of the
-    // viewport, both charts below (the pair is ~2 viewport heights, so
-    // the shot shows the header + the activity chart and the top of
-    // the accuracy chart).
-    await page.getByTestId("home-stats").evaluate((el) => {
-      const top = el.getBoundingClientRect().top + window.scrollY - 24;
+    // The obligation is the accuracy chart itself: scroll to it, not
+    // to the accordion header. A header-anchored frame leaves the
+    // chart and its axis below the fold.
+    await chart.evaluate((el) => {
+      const top = el.getBoundingClientRect().top + window.scrollY - 90;
       window.scrollTo({ top });
     });
+    await page.waitForTimeout(300);
 
     await waitForSyncToast(page);
 

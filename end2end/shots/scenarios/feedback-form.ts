@@ -25,7 +25,11 @@ export const feedbackFormScenario: ShotScenario = {
     await lesson.expectLessonVisible();
     await waitForAppReady(page);
 
-    // 1) Lesson header with the report button (question phase).
+    // 1) Lesson header with the report button in the card phase.
+    // The header mounts before the card: framing it on the
+    // «Подготовка карточек для урока…» не задокументированный экран.
+    await expect(lesson.lessonCard).toBeVisible({ timeout: 60_000 });
+    await expect(lesson.lessonLoading).toBeHidden({ timeout: 60_000 });
     await page
       .getByTestId("lesson-report-btn")
       .waitFor({ state: "visible", timeout: 60_000 });
