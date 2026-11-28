@@ -32,6 +32,8 @@ EXPECTED_SYNC_DIR_POLICY: dict[str, str] = {
     # forever — immutable, exactly like phrases/audio. More specific than
     # the examples/ rule; precedence lives in cache_control_for's if-chain.
     "examples/audio": IMMUTABLE,
+    # Counter-suffix TTS audio (uwuwu#1038): content-derived immutable keys.
+    "counters/audio": IMMUTABLE,
     "pitch/audio": RELEASE_UPDATED,
     "phrases/data": RELEASE_UPDATED,
     "phrases/precomputed": RELEASE_UPDATED,
@@ -217,6 +219,7 @@ def test_immutable_and_release_rules_are_disjoint():
     # in test_deploy_cdn_excludes.py.
     intentional_nestings = {
         "examples/audio/": "examples/",  # example TTS audio (#528)
+        "counters/audio/": "counters/",  # counter-suffix TTS audio (#1038)
     }
     for imm in _cdn_cache._IMMUTABLE_RULES:
         for rel in _cdn_cache._RELEASE_UPDATED_RULES:

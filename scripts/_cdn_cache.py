@@ -55,6 +55,9 @@ _IMMUTABLE_RULES: Final[frozenset[str]] = frozenset(
         # byte-identical forever — immutable. More specific than the
         # release-updated examples/ rule, and IMMUTABLE is checked first.
         "examples/audio/",
+        # Counter-suffix TTS audio (uwuwu#1038): content-derived TTS-marked
+        # keys, byte-stable forever — a changed reading mints a new key.
+        "counters/audio/",
         "whisper/",
         # Store assets published by scripts/publish_media.py (ADR-068).
         # Every key carries the SHA256 of the file, so a changed asset gets a
