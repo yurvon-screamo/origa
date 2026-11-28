@@ -46,7 +46,8 @@ fn install_test_vocabulary() {
     let empty = "{}".to_string();
     let particles = r#"{
         "が": {"ru": {"t": ["частица, указывающая на подлежащее"], "d": ""}},
-        "よ": {"ru": {"t": ["частица, обозначающая вопрос или подтверждение"], "d": ""}}
+        "よ": {"ru": {"t": ["частица, обозначающая вопрос или подтверждение"], "d": ""}},
+        "な": {"ru": {"t": ["быть, являться (связка)"], "d": ""}}
     }"#;
     let _ = init_vocabulary(VocabularyChunkData {
         chunk_01: particles.to_string(),
@@ -683,6 +684,27 @@ mod translator_quick_add {
         );
     }
 
+    /// A homonym with a dictionary article: `な` is a Particle POS but its
+    /// article is the copula, not the particle sense — the surface gate
+    /// must keep it plain even though a translation exists.
+    fn install_homonym_entry() {
+        use origa::domain::{
+            PartOfSpeech, PrecomputedEntry, PrecomputedToken, install_precomputed_entry,
+        };
+        install_precomputed_entry(
+            "な",
+            PrecomputedEntry {
+                furigana_spans: vec![],
+                tokens: vec![PrecomputedToken {
+                    surface: "な".to_string(),
+                    base: "な".to_string(),
+                    reading: "な".to_string(),
+                    pos: PartOfSpeech::Particle,
+                }],
+            },
+        );
+    }
+
     async fn wait_for_tokens(wrapper: &web_sys::Element) {
         for _ in 0..10 {
             tick().await;
@@ -789,12 +811,69 @@ mod translator_quick_add {
                 .is_none(),
             "kana particle does not repeat its surface as a reading line"
         );
+        assert!(
+            popup
+                .text_content()
+                .as_deref()
+                .is_some_and(|t| t.contains("частица, указывающая на подлежащее")),
+            "particle popup renders its dictionary article"
+        );
         let grammar_btn = wrapper
             .query_selector("[data-testid=\"token-popup-add-word\"]")
             .unwrap();
         assert!(
             grammar_btn.is_none(),
             "particle never shows the quick-add button"
+        );
+    }
+
+    /// The surface whitelist must also hold in the DOM: a particle homonym
+    /// with a dictionary article stays a plain, non-clickable token.
+    #[wasm_bindgen_test]
+    async fn homonym_particle_stays_plain_in_dom() {
+        use wasm_bindgen::JsCast;
+        install_test_vocabulary();
+        install_homonym_entry();
+        let wrapper = create_wrapper();
+        mount_with_i18n(&wrapper, || {
+            view! {
+                <TranslatorText
+                    text="な"
+                    native_language=Signal::derive(|| origa::domain::NativeLanguage::Russian)
+                />
+            }
+            .into_any()
+        });
+        for _ in 0..10 {
+            tick().await;
+            if wrapper.query_selector(".token-plain").unwrap().is_some() {
+                break;
+            }
+            crate::utils::yield_to_browser().await;
+        }
+        let plain = wrapper
+            .query_selector(".token-plain")
+            .unwrap()
+            .expect("homonym renders as a plain token");
+        assert!(
+            plain.text_content().as_deref() == Some("な"),
+            "the plain token is the homonym"
+        );
+        assert!(
+            wrapper
+                .query_selector_all(".token-surface")
+                .unwrap()
+                .length()
+                == 0,
+            "homonym is not clickable"
+        );
+        if let Some(el) = plain.dyn_ref::<web_sys::HtmlElement>() {
+            el.click();
+            tick().await;
+        }
+        assert!(
+            wrapper.query_selector(".token-popup").unwrap().is_none(),
+            "clicking a plain homonym opens no popup"
         );
     }
 }

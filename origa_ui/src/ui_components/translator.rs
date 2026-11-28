@@ -621,4 +621,47 @@ mod tests {
 
         assert!(token_has_popup(&token));
     }
+
+    /// Contract pin for uwuwu#938: the surfaces declared as verified in the
+    /// task must keep their popup, and the named homonyms must never become
+    /// clickable. A later edit to the curated whitelist has to update this
+    /// list explicitly — that is the point of a verified-only gate.
+    #[test]
+    fn declared_particle_surface_contract() {
+        const DECLARED: &[&str] = &[
+            "は",
+            "が",
+            "を",
+            "に",
+            "で",
+            "と",
+            "の",
+            "か",
+            "よ",
+            "ね",
+            "も",
+            "から",
+            "まで",
+            "へ",
+            "や",
+            "けど",
+            "けれど",
+            "ので",
+            "のに",
+        ];
+        for surface in DECLARED {
+            let token = token(PartOfSpeech::Particle, surface, surface, "статья");
+            assert!(
+                token_has_popup(&token),
+                "declared particle {surface} lost its popup"
+            );
+        }
+        for surface in ["な", "さ", "い", "ぜ", "もの"] {
+            let token = token(PartOfSpeech::Particle, surface, surface, "статья");
+            assert!(
+                !token_has_popup(&token),
+                "homonym {surface} must stay plain"
+            );
+        }
+    }
 }
