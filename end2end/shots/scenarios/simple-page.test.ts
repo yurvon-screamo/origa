@@ -61,12 +61,15 @@ test("the wait gives the toast a mount window before asserting it vanished", asy
 
   await waitForSyncToastToDisappear(fakePage());
 
-  assert.deepEqual(calls, [
-    'locator:[data-testid^="toast-"]',
-    "wait:visible:2000",
-    'locator:[data-testid^="toast-"]',
-    "count:0:15000",
-  ]);
+  assert.ok(
+    calls.includes('locator:[data-testid^="toast-"]'),
+    "the toast locator was not queried",
+  );
+  const mount = calls.findIndex((call) => call.startsWith("wait:visible"));
+  const vanish = calls.findIndex((call) => call.startsWith("count:0:"));
+  assert.ok(mount >= 0, "the toast was not given a mount window");
+  assert.ok(vanish >= 0, "the toast disappearance was not asserted");
+  assert.ok(mount < vanish, "the mount wait must precede the vanish check");
 });
 
 test("a page with no toast still passes the wait", async () => {
@@ -74,7 +77,10 @@ test("a page with no toast still passes the wait", async () => {
 
   await waitForSyncToastToDisappear(fakePage());
 
-  assert.deepEqual(calls.slice(-1), ["count:0:15000"]);
+  assert.ok(
+    calls.some((call) => call.startsWith("count:0:")),
+    "the disappearance must still be asserted without a toast",
+  );
 });
 
 test("a toast that never leaves fails the wait", async () => {

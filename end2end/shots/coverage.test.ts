@@ -284,9 +284,9 @@ test("a no-scenario exclusion needs no flag or file source", async () => {
       }),
     ]),
   );
-  assert.equal(
-    issues.some((issue) => issue.problem.includes("needs a flag or file")),
-    false,
+  assert.deepEqual(
+    issues.filter((issue) => issue.row === "test:row"),
+    [],
   );
 });
 
