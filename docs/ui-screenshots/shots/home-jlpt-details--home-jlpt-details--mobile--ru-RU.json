@@ -8,13 +8,13 @@
   "width": 390,
   "height": 844,
   "fullPage": false,
-  "bytes": 132752,
-  "sha256": "b3da2299dacfd3dbf86e56b5e11d54486013b517f38f3a9e8a3e5252809a8547",
-  "capturedAt": "2026-11-27T16:16:53.684Z",
-  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
+  "bytes": 132652,
+  "sha256": "e4ff37838891234ff0326514912d85610bb9029163fcd08dbe7a637ca9afc135",
+  "capturedAt": "2026-11-28T00:31:25.265Z",
+  "commit": "005d060f9cdf74ec0c7ddbe7d8166dd98a685141",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/home-jlpt-details--home-jlpt-details--mobile-b3da2299.png",
-  "uploadedSha256": "b3da2299dacfd3dbf86e56b5e11d54486013b517f38f3a9e8a3e5252809a8547",
-  "uploadedAt": "2026-11-27T16:22:31.902Z"
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-final/home-jlpt-details--home-jlpt-details--mobile-e4ff3783.png",
+  "uploadedSha256": "e4ff37838891234ff0326514912d85610bb9029163fcd08dbe7a637ca9afc135",
+  "uploadedAt": "2026-11-28T02:28:26.497Z"
 }

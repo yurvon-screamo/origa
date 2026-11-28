@@ -10,11 +10,11 @@
   "fullPage": false,
   "bytes": 621843,
   "sha256": "e76a16ea0730e9cdbd82fe23ada2bf64208975af866ac2892301f074d4069f2a",
-  "capturedAt": "2026-11-27T10:16:05.147Z",
-  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
+  "capturedAt": "2026-11-27T23:51:42.790Z",
+  "commit": "005d060f9cdf74ec0c7ddbe7d8166dd98a685141",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/counters--counters-list--desktop-e76a16ea.png",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-final/counters--counters-list--desktop-e76a16ea.png",
   "uploadedSha256": "e76a16ea0730e9cdbd82fe23ada2bf64208975af866ac2892301f074d4069f2a",
-  "uploadedAt": "2026-11-27T16:22:03.874Z"
+  "uploadedAt": "2026-11-28T02:28:09.937Z"
 }

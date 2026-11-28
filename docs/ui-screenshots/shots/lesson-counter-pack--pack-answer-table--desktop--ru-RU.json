@@ -8,13 +8,13 @@
   "width": 1280,
   "height": 800,
   "fullPage": false,
-  "bytes": 251019,
-  "sha256": "0bd919c2a97b778a109a70306e63420dd94b8f958219c1e09a1c71e1adbf9fc5",
-  "capturedAt": "2026-11-27T11:27:43.045Z",
-  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
+  "bytes": 249525,
+  "sha256": "3b39b9da8ac6f1cbac65ca84f3eec89cca8844357303b851f0e23d4a8ce9cb5d",
+  "capturedAt": "2026-11-28T00:47:25.252Z",
+  "commit": "005d060f9cdf74ec0c7ddbe7d8166dd98a685141",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/lesson-counter-pack--pack-answer-table--desktop-0bd919c2.png",
-  "uploadedSha256": "0bd919c2a97b778a109a70306e63420dd94b8f958219c1e09a1c71e1adbf9fc5",
-  "uploadedAt": "2026-11-27T16:22:46.081Z"
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-final/lesson-counter-pack--pack-answer-table--desktop-3b39b9da.png",
+  "uploadedSha256": "3b39b9da8ac6f1cbac65ca84f3eec89cca8844357303b851f0e23d4a8ce9cb5d",
+  "uploadedAt": "2026-11-28T02:28:42.165Z"
 }

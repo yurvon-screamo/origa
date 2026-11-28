@@ -8,13 +8,13 @@
   "width": 1280,
   "height": 800,
   "fullPage": false,
-  "bytes": 209281,
-  "sha256": "396fe9adaa12eaed0e478f3c492c2cb835776a6e17cdf2b53d578e22601bd62e",
-  "capturedAt": "2026-11-27T16:18:59.120Z",
-  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
+  "bytes": 209862,
+  "sha256": "9ef37f9bac97d6a0869e5fb4a1a54b1652dd613f34a266595b43887f537d9a7d",
+  "capturedAt": "2026-11-28T00:33:31.459Z",
+  "commit": "005d060f9cdf74ec0c7ddbe7d8166dd98a685141",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/jft-card--home-jft--desktop-396fe9ad.png",
-  "uploadedSha256": "396fe9adaa12eaed0e478f3c492c2cb835776a6e17cdf2b53d578e22601bd62e",
-  "uploadedAt": "2026-11-27T16:22:32.561Z"
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-final/jft-card--home-jft--desktop-9ef37f9b.png",
+  "uploadedSha256": "9ef37f9bac97d6a0869e5fb4a1a54b1652dd613f34a266595b43887f537d9a7d",
+  "uploadedAt": "2026-11-28T02:28:27.549Z"
 }

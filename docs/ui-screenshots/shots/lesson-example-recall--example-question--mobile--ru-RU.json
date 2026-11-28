@@ -10,11 +10,11 @@
   "fullPage": false,
   "bytes": 171349,
   "sha256": "0378ade9a79468891ba76c26adfe5dc876a7208170212cced5d276b2c09f7d77",
-  "capturedAt": "2026-11-27T11:47:07.519Z",
-  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
+  "capturedAt": "2026-11-28T00:58:57.070Z",
+  "commit": "005d060f9cdf74ec0c7ddbe7d8166dd98a685141",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/lesson-example-recall--example-question--mobile-0378ade9.png",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-final/lesson-example-recall--example-question--mobile-0378ade9.png",
   "uploadedSha256": "0378ade9a79468891ba76c26adfe5dc876a7208170212cced5d276b2c09f7d77",
-  "uploadedAt": "2026-11-27T16:22:53.428Z"
+  "uploadedAt": "2026-11-28T02:28:47.692Z"
 }

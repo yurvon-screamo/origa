@@ -8,13 +8,13 @@
   "width": 1280,
   "height": 800,
   "fullPage": false,
-  "bytes": 192663,
-  "sha256": "c42e28aa30a86568bfd8798e270fb8101c741fd4a3b1358da1f47f6beab9537a",
-  "capturedAt": "2026-11-27T10:58:15.022Z",
-  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
+  "bytes": 192508,
+  "sha256": "1b46b2994b11e4258aae46b3633535fdf066deebae697447a8eb3e891553c6d8",
+  "capturedAt": "2026-11-28T00:40:41.521Z",
+  "commit": "005d060f9cdf74ec0c7ddbe7d8166dd98a685141",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/lesson-acquaintance-grammar--grammar-answer--desktop-c42e28aa.png",
-  "uploadedSha256": "c42e28aa30a86568bfd8798e270fb8101c741fd4a3b1358da1f47f6beab9537a",
-  "uploadedAt": "2026-11-27T16:22:39.118Z"
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-final/lesson-acquaintance-grammar--grammar-answer--desktop-1b46b299.png",
+  "uploadedSha256": "1b46b2994b11e4258aae46b3633535fdf066deebae697447a8eb3e891553c6d8",
+  "uploadedAt": "2026-11-28T02:28:33.551Z"
 }

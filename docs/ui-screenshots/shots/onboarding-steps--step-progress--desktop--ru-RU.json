@@ -8,13 +8,13 @@
   "width": 1280,
   "height": 800,
   "fullPage": false,
-  "bytes": 481093,
-  "sha256": "d9563acc35a2ae42ab6cc0a69d0510779739335c7da5645ce501bcfd8c7e92c1",
-  "capturedAt": "2026-11-27T12:38:36.290Z",
-  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
+  "bytes": 481345,
+  "sha256": "e30c42a2db966011513b3c894f7a93d3a4772f852587649df2859847b874bbcd",
+  "capturedAt": "2026-11-28T01:28:18.660Z",
+  "commit": "005d060f9cdf74ec0c7ddbe7d8166dd98a685141",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/onboarding-steps--step-progress--desktop-d9563acc.png",
-  "uploadedSha256": "d9563acc35a2ae42ab6cc0a69d0510779739335c7da5645ce501bcfd8c7e92c1",
-  "uploadedAt": "2026-11-27T16:23:44.813Z"
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-final/onboarding-steps--step-progress--desktop-e30c42a2.png",
+  "uploadedSha256": "e30c42a2db966011513b3c894f7a93d3a4772f852587649df2859847b874bbcd",
+  "uploadedAt": "2026-11-28T02:29:17.976Z"
 }

@@ -8,13 +8,13 @@
   "width": 1280,
   "height": 800,
   "fullPage": false,
-  "bytes": 506127,
-  "sha256": "cc77eac1d96457bfc2153c67f329da12b76cbf69f0fa91dc092a45c850e0b051",
-  "capturedAt": "2026-11-27T10:16:05.345Z",
-  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
+  "bytes": 475692,
+  "sha256": "15bef5cf2a110817503146f8307c3fe729b7cab14d9129c139334487b9fed98d",
+  "capturedAt": "2026-11-27T23:51:43.008Z",
+  "commit": "005d060f9cdf74ec0c7ddbe7d8166dd98a685141",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/counters--counters-add-drawer--desktop-cc77eac1.png",
-  "uploadedSha256": "cc77eac1d96457bfc2153c67f329da12b76cbf69f0fa91dc092a45c850e0b051",
-  "uploadedAt": "2026-11-27T16:22:07.474Z"
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-final/counters--counters-add-drawer--desktop-15bef5cf.png",
+  "uploadedSha256": "15bef5cf2a110817503146f8307c3fe729b7cab14d9129c139334487b9fed98d",
+  "uploadedAt": "2026-11-28T02:28:11.143Z"
 }

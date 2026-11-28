@@ -10,11 +10,11 @@
   "fullPage": false,
   "bytes": 534130,
   "sha256": "79ae7909d98524e2ef5cf788de5afd1f445dd66de409795e100c76e6b2e50804",
-  "capturedAt": "2026-11-27T10:30:13.677Z",
-  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
+  "capturedAt": "2026-11-28T00:14:37.950Z",
+  "commit": "005d060f9cdf74ec0c7ddbe7d8166dd98a685141",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/grammar-page--grid-viewport--desktop-79ae7909.png",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-final/grammar-page--grid-viewport--desktop-79ae7909.png",
   "uploadedSha256": "79ae7909d98524e2ef5cf788de5afd1f445dd66de409795e100c76e6b2e50804",
-  "uploadedAt": "2026-11-27T16:22:21.582Z"
+  "uploadedAt": "2026-11-28T02:28:19.400Z"
 }

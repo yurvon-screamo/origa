@@ -8,13 +8,13 @@
   "width": 390,
   "height": 844,
   "fullPage": false,
-  "bytes": 183972,
-  "sha256": "3a8e252e65a5f05f12aa3c9413b90ebdcb17592dacfb5c0fd36d1e92e136ae22",
-  "capturedAt": "2026-11-27T10:17:42.661Z",
-  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
+  "bytes": 135481,
+  "sha256": "a10015de11365d766e0070d6c247b475c68e3bc9b3116a23561965e71d943ac0",
+  "capturedAt": "2026-11-27T23:53:21.411Z",
+  "commit": "005d060f9cdf74ec0c7ddbe7d8166dd98a685141",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/counters--counters-add-drawer--mobile-3a8e252e.png",
-  "uploadedSha256": "3a8e252e65a5f05f12aa3c9413b90ebdcb17592dacfb5c0fd36d1e92e136ae22",
-  "uploadedAt": "2026-11-27T16:22:12.184Z"
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-final/counters--counters-add-drawer--mobile-a10015de.png",
+  "uploadedSha256": "a10015de11365d766e0070d6c247b475c68e3bc9b3116a23561965e71d943ac0",
+  "uploadedAt": "2026-11-28T02:28:13.044Z"
 }

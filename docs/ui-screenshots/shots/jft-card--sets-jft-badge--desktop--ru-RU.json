@@ -10,11 +10,11 @@
   "fullPage": false,
   "bytes": 469086,
   "sha256": "7d8167655902c5a30665610ac452c6c73f61fa4a7767b4adc9e4bc42e144133e",
-  "capturedAt": "2026-11-27T16:19:03.167Z",
-  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
+  "capturedAt": "2026-11-28T00:33:32.786Z",
+  "commit": "005d060f9cdf74ec0c7ddbe7d8166dd98a685141",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/jft-card--sets-jft-badge--desktop-7d816765.png",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-final/jft-card--sets-jft-badge--desktop-7d816765.png",
   "uploadedSha256": "7d8167655902c5a30665610ac452c6c73f61fa4a7767b4adc9e4bc42e144133e",
-  "uploadedAt": "2026-11-27T16:22:33.443Z"
+  "uploadedAt": "2026-11-28T02:28:28.475Z"
 }

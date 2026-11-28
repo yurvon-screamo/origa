@@ -8,13 +8,13 @@
   "width": 1280,
   "height": 800,
   "fullPage": false,
-  "bytes": 674535,
-  "sha256": "51aed3ea62ac4969ab5d595ab004d95a09455b7b6b4c884a67350352860b51be",
-  "capturedAt": "2026-11-27T12:38:35.732Z",
-  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
+  "bytes": 674729,
+  "sha256": "ab4fc01ba2b50550e4ff0f06ba9bb11d9ab4b9a5703cbeb20ebe5e7c7f387f48",
+  "capturedAt": "2026-11-28T01:28:18.189Z",
+  "commit": "005d060f9cdf74ec0c7ddbe7d8166dd98a685141",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/onboarding-steps--step-jlpt--desktop-51aed3ea.png",
-  "uploadedSha256": "51aed3ea62ac4969ab5d595ab004d95a09455b7b6b4c884a67350352860b51be",
-  "uploadedAt": "2026-11-27T16:23:41.147Z"
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-final/onboarding-steps--step-jlpt--desktop-ab4fc01b.png",
+  "uploadedSha256": "ab4fc01ba2b50550e4ff0f06ba9bb11d9ab4b9a5703cbeb20ebe5e7c7f387f48",
+  "uploadedAt": "2026-11-28T02:29:15.864Z"
 }

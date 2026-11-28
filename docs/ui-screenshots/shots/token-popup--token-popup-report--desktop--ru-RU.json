@@ -8,13 +8,13 @@
   "width": 1280,
   "height": 800,
   "fullPage": false,
-  "bytes": 360971,
-  "sha256": "6e428ff03458fc272ae6a2f93dd00a40216f28eb518ac5e94628b1cba3fc7c1b",
-  "capturedAt": "2026-11-27T14:30:48.526Z",
-  "commit": "0cb1efaa8b8bb42addc661107550646f8ff27190",
+  "bytes": 364916,
+  "sha256": "cd39d43d10c316f745eede9e51488d764062836f0ddde78d99bebc7cfcffc7f9",
+  "capturedAt": "2026-11-28T01:36:15.611Z",
+  "commit": "005d060f9cdf74ec0c7ddbe7d8166dd98a685141",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691/token-popup--token-popup-report--desktop-6e428ff0.png",
-  "uploadedSha256": "6e428ff03458fc272ae6a2f93dd00a40216f28eb518ac5e94628b1cba3fc7c1b",
-  "uploadedAt": "2026-11-27T16:23:59.097Z"
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-final/token-popup--token-popup-report--desktop-cd39d43d.png",
+  "uploadedSha256": "cd39d43d10c316f745eede9e51488d764062836f0ddde78d99bebc7cfcffc7f9",
+  "uploadedAt": "2026-11-28T02:29:29.090Z"
 }
