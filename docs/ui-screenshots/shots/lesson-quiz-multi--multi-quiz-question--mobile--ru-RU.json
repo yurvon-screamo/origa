@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "lesson-quiz-multi",
+  "screen": "multi-quiz-question",
+  "route": "/lesson",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 213744,
+  "sha256": "ba1469f4d7c8fd2f47f49e238f4bc4c18687c36628fae46903b4c72eb788891e",
+  "capturedAt": "2026-11-28T12:32:47.281Z",
+  "commit": "e83038edadf758780f587c2e3d0cbe14ab15c30e",
+  "baseURL": "http://localhost:1421",
+  "cdnBaseUrl": "http://localhost:8082",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-merge/lesson-quiz-multi--multi-quiz-question--mobile-ba1469f4.png",
+  "uploadedSha256": "ba1469f4d7c8fd2f47f49e238f4bc4c18687c36628fae46903b4c72eb788891e",
+  "uploadedAt": "2026-11-28T12:36:45.509Z"
+}

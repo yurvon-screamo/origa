@@ -46,6 +46,11 @@ Then(
   },
 );
 
+Then("результатов анализа одна строка", async ({ page }) => {
+  const wordsPage = new WordsPage(page);
+  await wordsPage.expectSingleAnalyzedWord();
+});
+
 When("выбирает первое слово из результатов", async ({ page }) => {
   const wordsPage = new WordsPage(page);
   await wordsPage.selectFirstWord();
@@ -78,6 +83,12 @@ Then("слово отображается в сетке слов", async ({ page
   const wordsPage = new WordsPage(page);
   await expect(wordsPage.wordsGrid).toBeVisible({ timeout: 10_000 });
   await expect(wordsPage.emptyState).not.toBeVisible();
+});
+
+Then("в сетке слов одна карточка", async ({ page }) => {
+  const wordsPage = new WordsPage(page);
+  await expect(wordsPage.wordsGrid).toBeVisible({ timeout: 10_000 });
+  expect(await wordsPage.getCardCount()).toBe(1);
 });
 
 Then("карточка слова — без второй рамки", async ({ page }) => {

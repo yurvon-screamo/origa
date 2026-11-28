@@ -8,13 +8,13 @@
   "width": 390,
   "height": 844,
   "fullPage": false,
-  "bytes": 189076,
-  "sha256": "319efab60df86d98a270b5837566f685369e83186dcc72c144b75690ce9e4696",
+  "bytes": 177147,
+  "sha256": "f9bc4ae117fd7d3c1e18f8a5ea4d1629f1d391d5ea92023cba5ffbfe44c60862",
   "capturedAt": "2026-11-28T01:03:39.859Z",
   "commit": "005d060f9cdf74ec0c7ddbe7d8166dd98a685141",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-final/lesson-reading-quiz--quiz-answer--mobile-319efab6.png",
-  "uploadedSha256": "319efab60df86d98a270b5837566f685369e83186dcc72c144b75690ce9e4696",
-  "uploadedAt": "2026-11-28T02:28:54.251Z"
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-merge/lesson-reading-quiz--quiz-answer--mobile-f9bc4ae1.png",
+  "uploadedSha256": "f9bc4ae117fd7d3c1e18f8a5ea4d1629f1d391d5ea92023cba5ffbfe44c60862",
+  "uploadedAt": "2026-11-28T12:37:42.371Z"
 }

@@ -3,6 +3,7 @@ mod error;
 mod furigana;
 mod furigana_annotator;
 pub mod furigana_context;
+mod furigana_tokens;
 pub(crate) mod grammar;
 mod import_preview;
 pub mod insights;
@@ -32,6 +33,7 @@ pub use furigana::{
     furiganize_text_precomputed,
 };
 pub use furigana_annotator::{AnnotatedSpan, annotate_text};
+pub use furigana_tokens::furiganize_segments_from_precomputed_tokens;
 pub use grammar::apply_format_actions;
 pub use grammar::quiz_generation::{
     GrammarPracticeQuestion, find_known_vocab_words_for_pos, generate_grammar_distractors,
@@ -54,8 +56,9 @@ pub use knowledge::{
     ExampleCard, ExampleKanjiWord, GrammarInfo, GrammarQuizCard, GrammarRuleCard, InsightsLog,
     KanjiCard, KnowledgeSet, LessonCard, LessonCardView, LessonData, LessonEmptyDiagnosis,
     LessonViewGenerator, MAX_LESSON_SIZE, MultiQuizResult, PhraseCard, QuizCard, QuizMode,
-    QuizOption, StudyCard, VocabularyCard, YesNoCard, diagnose_empty_lesson,
-    estimate_completion_date, install_precompute_for_cards,
+    QuizOption, StudyCard, VocabularyCard, WordIdentityScanGroup, WordIdentityScanReport,
+    YesNoCard, diagnose_empty_lesson, estimate_completion_date, install_precompute_for_cards,
+    scan_duplicate_cards,
 };
 pub(crate) use knowledge::{MAX_COMPANION_WORDS, distribute_new_cards, jlpt_sort_key};
 pub use stats::{RatingRatio, TodayOverview, compute_rating_ratio, compute_today_overview};

@@ -15,6 +15,13 @@
 //! timeout so a hung native call falls back instead of freezing the UI.
 
 pub mod contracts;
+
+#[cfg(all(target_arch = "wasm32", test))]
+pub(crate) fn test_serial_lock() -> &'static futures::lock::Mutex<()> {
+    static LOCK: std::sync::OnceLock<futures::lock::Mutex<()>> = std::sync::OnceLock::new();
+    LOCK.get_or_init(|| futures::lock::Mutex::new(()))
+}
+
 #[cfg(all(target_arch = "wasm32", test))]
 mod degradation_wasm_tests;
 mod invoke;

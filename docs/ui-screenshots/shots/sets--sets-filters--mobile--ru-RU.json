@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "sets",
+  "screen": "sets-filters",
+  "route": "/sets",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 227474,
+  "sha256": "6457cb3d0b1cf4a589c9eca2f662c9367707e282643a21cdfacf812b77257233",
+  "capturedAt": "2026-11-28T12:32:47.324Z",
+  "commit": "e83038edadf758780f587c2e3d0cbe14ab15c30e",
+  "baseURL": "http://localhost:1421",
+  "cdnBaseUrl": "http://localhost:8082",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-merge/sets--sets-filters--mobile-6457cb3d.png",
+  "uploadedSha256": "6457cb3d0b1cf4a589c9eca2f662c9367707e282643a21cdfacf812b77257233",
+  "uploadedAt": "2026-11-28T12:36:31.980Z"
+}

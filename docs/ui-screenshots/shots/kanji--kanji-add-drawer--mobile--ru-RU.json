@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "kanji",
+  "screen": "kanji-add-drawer",
+  "route": "/kanji",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 142976,
+  "sha256": "1c28fa0b1d3f90706750a5d53a6e50e4cd3e9b6c0365e560240475e493604643",
+  "capturedAt": "2026-11-28T12:32:47.246Z",
+  "commit": "e83038edadf758780f587c2e3d0cbe14ab15c30e",
+  "baseURL": "http://localhost:1421",
+  "cdnBaseUrl": "http://localhost:8082",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-merge/kanji--kanji-add-drawer--mobile-1c28fa0b.png",
+  "uploadedSha256": "1c28fa0b1d3f90706750a5d53a6e50e4cd3e9b6c0365e560240475e493604643",
+  "uploadedAt": "2026-11-28T12:36:26.848Z"
+}

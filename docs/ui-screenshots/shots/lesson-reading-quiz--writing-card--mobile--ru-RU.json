@@ -8,13 +8,13 @@
   "width": 390,
   "height": 844,
   "fullPage": false,
-  "bytes": 168113,
-  "sha256": "e9e5c34ef487e96e4d7b38ea86de7e4309bb94ad3dfd974370d886e5663ab069",
+  "bytes": 169021,
+  "sha256": "b86a91028cbdbbc16bad52a2be5ee89018703f49354bf5a28856b7621a316c6b",
   "capturedAt": "2026-11-28T01:03:26.987Z",
   "commit": "005d060f9cdf74ec0c7ddbe7d8166dd98a685141",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-final/lesson-reading-quiz--writing-card--mobile-e9e5c34e.png",
-  "uploadedSha256": "e9e5c34ef487e96e4d7b38ea86de7e4309bb94ad3dfd974370d886e5663ab069",
-  "uploadedAt": "2026-11-28T02:28:52.436Z"
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-merge/lesson-reading-quiz--writing-card--mobile-b86a9102.png",
+  "uploadedSha256": "b86a91028cbdbbc16bad52a2be5ee89018703f49354bf5a28856b7621a316c6b",
+  "uploadedAt": "2026-11-28T12:37:45.756Z"
 }

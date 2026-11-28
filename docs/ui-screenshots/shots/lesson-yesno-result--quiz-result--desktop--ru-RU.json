@@ -8,13 +8,13 @@
   "width": 1280,
   "height": 800,
   "fullPage": false,
-  "bytes": 323068,
-  "sha256": "9ac0787ee50c58e8b5b6d6c67d746305494b07046e3b079653afbe17b09b715e",
+  "bytes": 325092,
+  "sha256": "88dd8f398c6fb9e20d76a01115c70ead2d17009184764349af40d49dd2ab8dd8",
   "capturedAt": "2026-11-28T01:17:07.966Z",
   "commit": "005d060f9cdf74ec0c7ddbe7d8166dd98a685141",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-final/lesson-yesno-result--quiz-result--desktop-9ac0787e.png",
-  "uploadedSha256": "9ac0787ee50c58e8b5b6d6c67d746305494b07046e3b079653afbe17b09b715e",
-  "uploadedAt": "2026-11-28T02:28:58.502Z"
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-merge/lesson-yesno-result--quiz-result--desktop-88dd8f39.png",
+  "uploadedSha256": "88dd8f398c6fb9e20d76a01115c70ead2d17009184764349af40d49dd2ab8dd8",
+  "uploadedAt": "2026-11-28T12:38:33.488Z"
 }

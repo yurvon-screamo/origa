@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "feedback-form",
+  "screen": "lesson-header-report-disabled",
+  "route": "/lesson",
+  "viewport": "desktop",
+  "locale": "ru-RU",
+  "width": 1280,
+  "height": 800,
+  "fullPage": false,
+  "bytes": 598722,
+  "sha256": "2b5879942aa7c7770f9a94f2b080cf5772e0d3a824ffbc53e21763a9b2f31051",
+  "capturedAt": "2026-11-28T12:32:47.229Z",
+  "commit": "e83038edadf758780f587c2e3d0cbe14ab15c30e",
+  "baseURL": "http://localhost:1421",
+  "cdnBaseUrl": "http://localhost:8082",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-merge/feedback-form--lesson-header-report-disabled--desktop-2b587994.png",
+  "uploadedSha256": "2b5879942aa7c7770f9a94f2b080cf5772e0d3a824ffbc53e21763a9b2f31051",
+  "uploadedAt": "2026-11-28T12:36:34.062Z"
+}

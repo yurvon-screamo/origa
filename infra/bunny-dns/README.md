@@ -115,7 +115,8 @@ incident).
 
 ```bash
 # edit handleQuery.js, then:
-node infra/bunny-dns/smoke.test.mjs                 # branch matrix must stay green
+node infra/bunny-dns/smoke.test.mjs                 # branch matrix + README doc-contract pins must stay green
+node infra/bunny-dns/docpin-redpin.test.mjs         # red-pin gate: each pinned drift must turn the suite red
 node --check infra/bunny-dns/handleQuery.js         # syntax gate
 bunny dns scripts deploy infra/bunny-dns/handleQuery.js 91629   # upload + publish
 ```

@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scenario": "feedback-form",
+  "screen": "feedback-modal-filled",
+  "route": "/lesson",
+  "viewport": "mobile",
+  "locale": "ru-RU",
+  "width": 390,
+  "height": 844,
+  "fullPage": false,
+  "bytes": 147646,
+  "sha256": "5bdc3d9b742afd238db3cebebc15bba1fc338cf55954ee7c6435372aa36b3a61",
+  "capturedAt": "2026-11-28T12:32:47.220Z",
+  "commit": "e83038edadf758780f587c2e3d0cbe14ab15c30e",
+  "baseURL": "http://localhost:1421",
+  "cdnBaseUrl": "http://localhost:8082",
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-merge/feedback-form--feedback-modal-filled--mobile-5bdc3d9b.png",
+  "uploadedSha256": "5bdc3d9b742afd238db3cebebc15bba1fc338cf55954ee7c6435372aa36b3a61",
+  "uploadedAt": "2026-11-28T12:36:40.156Z"
+}

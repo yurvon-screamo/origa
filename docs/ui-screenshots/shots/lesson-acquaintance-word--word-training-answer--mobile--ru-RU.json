@@ -8,13 +8,13 @@
   "width": 390,
   "height": 844,
   "fullPage": false,
-  "bytes": 97037,
-  "sha256": "ce13246fad22ffcdb5467c00c0163832174de9deaa7dfd20b33bd6c1c0a3cf67",
+  "bytes": 114966,
+  "sha256": "95fbf7451ae7989b02e900c803943fd0570393188f6a3f6c15a6e52a77d687bf",
   "capturedAt": "2026-11-22T02:40:52.616Z",
   "commit": "249770690f6957fe37c80bd586686775d71d3434",
   "baseURL": "http://localhost:11421",
   "cdnBaseUrl": "http://localhost:18181",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-921/lesson-acquaintance-word--word-training-answer--mobile-ce13246f.png",
-  "uploadedSha256": "ce13246fad22ffcdb5467c00c0163832174de9deaa7dfd20b33bd6c1c0a3cf67",
-  "uploadedAt": "2026-11-22T04:44:32.917Z"
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-merge/lesson-acquaintance-word--word-training-answer--mobile-95fbf745.png",
+  "uploadedSha256": "95fbf7451ae7989b02e900c803943fd0570393188f6a3f6c15a6e52a77d687bf",
+  "uploadedAt": "2026-11-28T12:37:33.452Z"
 }

@@ -8,13 +8,13 @@
   "width": 390,
   "height": 1496,
   "fullPage": true,
-  "bytes": 117280,
-  "sha256": "713099a1922fdba57ab9a29bdf23ce6b11bc9c6be9c68adc04fe2b6b0b0d0156",
+  "bytes": 117110,
+  "sha256": "dbe6b28553b16c73e106646d379bf1e92521e61164167489e5d0fef64780ba3a",
   "capturedAt": "2026-11-28T00:45:44.393Z",
   "commit": "005d060f9cdf74ec0c7ddbe7d8166dd98a685141",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-final/lesson-acquaintance-kanji--kanji-presentation--mobile-713099a1.png",
-  "uploadedSha256": "713099a1922fdba57ab9a29bdf23ce6b11bc9c6be9c68adc04fe2b6b0b0d0156",
-  "uploadedAt": "2026-11-28T02:28:39.817Z"
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-merge/lesson-acquaintance-kanji--kanji-presentation--mobile-dbe6b285.png",
+  "uploadedSha256": "dbe6b28553b16c73e106646d379bf1e92521e61164167489e5d0fef64780ba3a",
+  "uploadedAt": "2026-11-28T12:37:31.280Z"
 }

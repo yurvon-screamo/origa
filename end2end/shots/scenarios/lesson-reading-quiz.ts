@@ -25,7 +25,11 @@ export const lessonReadingQuizScenario: ShotScenario = {
   async run({ page }, sink) {
     let quizShot = false;
     let writingShot = false;
-    for (let attempt = 0; attempt < 8 && !quizShot; attempt++) {
+    for (
+      let attempt = 0;
+      attempt < 8 && !(quizShot && writingShot);
+      attempt++
+    ) {
       await page.goto("/lesson");
       await page
         .getByTestId("lesson-page")
@@ -40,12 +44,21 @@ export const lessonReadingQuizScenario: ShotScenario = {
             .isVisible()
             .catch(() => false)
         ) {
-          quizShot = await captureReadingQuiz(page, sink);
-          if (quizShot) break;
-          // A single-reading kanji cannot produce a lenient
-          // state — the capture was skipped, reroll.
+          if (!quizShot) {
+            quizShot = await captureReadingQuiz(page, sink);
+            if (!quizShot) {
+              // A single-reading kanji cannot produce a lenient
+              // state — the capture was skipped, reroll.
+              await page.waitForTimeout(400);
+              break;
+            }
+          }
+          // The writing view is a separate inventory row. Do not end
+          // the walk on the quiz: keep advancing until both views are
+          // proved or the reroll budget is spent.
+          if (quizShot && writingShot) break;
           await page.waitForTimeout(400);
-          break;
+          continue;
         }
 
         // The writing card (stroke practice) on the way: capture it
@@ -146,6 +159,10 @@ export const lessonReadingQuizScenario: ShotScenario = {
     expect(
       quizShot,
       "a kanji reading quiz must appear within the reroll budget",
+    ).toBe(true);
+    expect(
+      writingShot,
+      "a writing card must appear within the reroll budget",
     ).toBe(true);
   },
 };

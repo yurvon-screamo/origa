@@ -8,13 +8,13 @@
   "width": 390,
   "height": 844,
   "fullPage": false,
-  "bytes": 393812,
-  "sha256": "ed17469d12c362bfbfda3a56dd73496563ef19cf386be7e82ea03f019d213a48",
+  "bytes": 393643,
+  "sha256": "fbd2352323e40a7a4b7912b09f9aea1a24c0d35cceb56ba0138b54415d29e07e",
   "capturedAt": "2026-11-28T01:29:57.816Z",
   "commit": "005d060f9cdf74ec0c7ddbe7d8166dd98a685141",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-final/onboarding-steps--step-load--mobile-ed17469d.png",
-  "uploadedSha256": "ed17469d12c362bfbfda3a56dd73496563ef19cf386be7e82ea03f019d213a48",
-  "uploadedAt": "2026-11-28T02:29:20.912Z"
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-merge/onboarding-steps--step-load--mobile-fbd23523.png",
+  "uploadedSha256": "fbd2352323e40a7a4b7912b09f9aea1a24c0d35cceb56ba0138b54415d29e07e",
+  "uploadedAt": "2026-11-28T12:39:03.326Z"
 }

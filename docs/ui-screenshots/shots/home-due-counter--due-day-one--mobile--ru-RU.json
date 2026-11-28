@@ -8,13 +8,13 @@
   "width": 390,
   "height": 844,
   "fullPage": false,
-  "bytes": 113626,
-  "sha256": "25f40f013f4b3b462f2cb7a3c80f75b6b5ea49436f75f22dfa0ce84c4acaece4",
+  "bytes": 114537,
+  "sha256": "2086ed6d87296460a6e6ba0bf49638141b63aca9f5f042130116e46377c9d5d7",
   "capturedAt": "2026-11-28T00:27:36.193Z",
   "commit": "005d060f9cdf74ec0c7ddbe7d8166dd98a685141",
   "baseURL": "http://localhost:1421",
   "cdnBaseUrl": "http://localhost:8082",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-final/home-due-counter--due-day-one--mobile-25f40f01.png",
-  "uploadedSha256": "25f40f013f4b3b462f2cb7a3c80f75b6b5ea49436f75f22dfa0ce84c4acaece4",
-  "uploadedAt": "2026-11-28T02:28:24.846Z"
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-merge/home-due-counter--due-day-one--mobile-2086ed6d.png",
+  "uploadedSha256": "2086ed6d87296460a6e6ba0bf49638141b63aca9f5f042130116e46377c9d5d7",
+  "uploadedAt": "2026-11-28T12:38:53.907Z"
 }

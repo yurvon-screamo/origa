@@ -2,8 +2,9 @@ import { expect, type Page } from "@playwright/test";
 
 import { answerTrainingForgot } from "../../helpers/lesson.ts";
 import { descriptors } from "../catalog.ts";
-import { readStoredUser, writeStoredUser } from "../seed.ts";
 import type { ShotScenario } from "../scenario.ts";
+import { readStoredUser, writeStoredUser } from "../seed.ts";
+import { waitForAppReady } from "./simple-page.ts";
 
 /**
  * The word family of the acquaintance hand: presentation, both training
@@ -35,6 +36,10 @@ export const lessonAcquaintanceWordScenario: ShotScenario = {
     await page
       .getByTestId("lesson-page")
       .waitFor({ state: "visible", timeout: 90_000 });
+    // The audio-front coin needs the pitch index and the loaded audio
+    // before the first training render. Without this wait the first
+    // cycle is always a text front, even though the coin is fair.
+    await waitForAppReady(page);
 
     const hand = page.getByTestId("acquaintance-view");
     await hand.waitFor({ state: "visible", timeout: 180_000 });

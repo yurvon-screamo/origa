@@ -8,13 +8,13 @@
   "width": 1280,
   "height": 800,
   "fullPage": false,
-  "bytes": 240189,
-  "sha256": "a79a55d11fec4a8f83787b9169d55df42b520c1d8a7d9e524444095f26d24a6c",
+  "bytes": 240309,
+  "sha256": "f1e661fb2312d2fba07c7e2ee83b7e50c92a5498200885eb19771faf85dda1c3",
   "capturedAt": "2026-11-22T03:04:00.576Z",
   "commit": "249770690f6957fe37c80bd586686775d71d3434",
   "baseURL": "http://localhost:11421",
   "cdnBaseUrl": "http://localhost:18181",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-921/lesson-acquaintance-word--word-presentation--desktop-a79a55d1.png",
-  "uploadedSha256": "a79a55d11fec4a8f83787b9169d55df42b520c1d8a7d9e524444095f26d24a6c",
-  "uploadedAt": "2026-11-22T04:44:32.915Z"
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-merge/lesson-acquaintance-word--word-presentation--desktop-f1e661fb.png",
+  "uploadedSha256": "f1e661fb2312d2fba07c7e2ee83b7e50c92a5498200885eb19771faf85dda1c3",
+  "uploadedAt": "2026-11-28T12:37:32.018Z"
 }

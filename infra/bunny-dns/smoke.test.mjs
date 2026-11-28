@@ -1,11 +1,16 @@
 /**
- * Branch-matrix smoke test for handleQuery.js (Bunny DNS script 91629).
+ * Branch-matrix + README doc-contract smoke test for handleQuery.js
+ * (Bunny DNS script 91629).
  *
  * Run: node infra/bunny-dns/smoke.test.mjs
  * Plain node:test + node:assert — no dependencies. The Bunny runtime
  * globals (ARecord, CnameRecord, Monitoring) are stubbed on globalThis
  * before the script under test is imported; the script only touches them
  * inside handleQuery, so import order is safe.
+ *
+ * The doc-contract block compares the live answers of the script against
+ * the README: two attached names, their targets and the guard policy.
+ * Only stable invariants are pinned — short-lived geo branches are not.
  *
  * Lives outside CI on purpose: infra/** is deliberately not in ci.yml
  * path filters (docs/scripts-only PRs skip CI entirely) — adding a CI
@@ -14,6 +19,7 @@
  */
 
 import { strict as assert } from "node:assert";
+import { readFileSync } from "node:fs";
 import { after, before, describe, it } from "node:test";
 
 const RF_VM_IP = "193.233.217.243";
@@ -282,5 +288,104 @@ describe("handleQuery (Bunny script 91629)", () => {
       assert.equal(answer.hostname, S3_WORLD_CNAME);
       assert.equal(answer.ttl, 300);
     });
+  });
+});
+
+describe("README ↔ handleQuery.js doc-contract pins", () => {
+  const readme = readFileSync(new URL("./README.md", import.meta.url), "utf8");
+
+  function attachedDocSections() {
+    const start = readme.indexOf("attached (SCRIPT records");
+    const end = readme.indexOf("Everything else in the zone", start);
+    assert.ok(
+      start !== -1 && end !== -1,
+      "README must document the SCRIPT-attached pair",
+    );
+
+    const header = readme.slice(start, end);
+    const matches = [...header.matchAll(/^- `([^`]+)`\s*→/gm)];
+
+    return matches.map((match, index) => ({
+      name: match[1],
+      text: header.slice(
+        match.index,
+        matches[index + 1]?.index ?? header.length,
+      ),
+    }));
+  }
+
+  before(() => {
+    globalThis.ARecord = ARecord;
+    globalThis.CnameRecord = CnameRecord;
+    globalThis.Monitoring = { getStatus: () => ({ isOnline: true }) };
+  });
+
+  after(() => {
+    delete globalThis.ARecord;
+    delete globalThis.CnameRecord;
+    delete globalThis.Monitoring;
+  });
+
+  it("pins exactly two attached names in README to the script's hostname guard", async () => {
+    const documented = attachedDocSections().map((section) => section.name);
+    assert.deepEqual(documented, ["s3.origa", "content.origa"]);
+    assert.match(readme, /to \*\*two\*\* names/);
+
+    const handleQuery = await import("./handleQuery.js").then((m) => m.default);
+    const candidates = [
+      ...documented.map((name) => `${name}.uwuwu.net`),
+      "origa.uwuwu.net",
+      "app.origa.uwuwu.net",
+      "umami.origa.uwuwu.net",
+      "pass.uwuwu.net",
+    ];
+    const answered = candidates.filter(
+      (hostname) => handleQuery(query(hostname, "US")) !== undefined,
+    );
+
+    assert.deepEqual(
+      answered,
+      documented.map((name) => `${name}.uwuwu.net`),
+    );
+  });
+
+  it("pins README targets to the answers the script actually returns", async () => {
+    const [s3, content] = attachedDocSections();
+    const handleQuery = await import("./handleQuery.js").then((m) => m.default);
+
+    const worldAnswer = handleQuery(query("s3.origa.uwuwu.net", "US"));
+    const rfAnswer = handleQuery(query("s3.origa.uwuwu.net", "RU"));
+    const contentAnswer = handleQuery(query("content.origa.uwuwu.net", "US"));
+
+    assert.ok(rfAnswer instanceof ARecord);
+    assert.ok(worldAnswer instanceof CnameRecord);
+    assert.ok(contentAnswer instanceof CnameRecord);
+    assert.ok(
+      s3.text.includes(rfAnswer.ip),
+      "README s3 section must carry the RF VM IP",
+    );
+    assert.ok(
+      s3.text.includes(worldAnswer.hostname),
+      "README s3 section must carry the world CNAME",
+    );
+    assert.ok(
+      content.text.includes(contentAnswer.hostname),
+      "README content section must carry the Tigris CNAME",
+    );
+  });
+
+  it("pins the guard policy: README plain names grey-answer", async () => {
+    const handleQuery = await import("./handleQuery.js").then((m) => m.default);
+
+    for (const name of ["origa", "app.origa", "umami.origa", "pass"]) {
+      assert.ok(readme.includes(`\`${name}\``), `README must list ${name}`);
+      assert.equal(
+        handleQuery(query(`${name}.uwuwu.net`, "RU")),
+        undefined,
+        `${name} must grey-answer`,
+      );
+    }
+    assert.match(readme, /answers only the two attached names/);
+    assert.match(readme, /returns `undefined` for anything else/);
   });
 });

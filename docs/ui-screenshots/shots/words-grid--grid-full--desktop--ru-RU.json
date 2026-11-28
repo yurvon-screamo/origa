@@ -8,13 +8,13 @@
   "width": 1280,
   "height": 800,
   "fullPage": true,
-  "bytes": 471642,
-  "sha256": "0b7907e3e67a2abe6f5d8a1f8e621b5860ff0844207c5bd7697d6876dfdeebf1",
+  "bytes": 608361,
+  "sha256": "3bd13bd455f76ff5e2e5584e72cf0a77ad4d04c7b6e9c9472a7625a1e8412355",
   "capturedAt": "2026-11-12T05:21:11.763Z",
   "commit": "331f832f38c3a1ec44fd02d3424fa22987589f9a",
   "baseURL": "http://localhost:1420",
   "cdnBaseUrl": "http://localhost:18081",
-  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-20261111125434/words-grid--grid-full--desktop-0b7907e3.png",
-  "uploadedSha256": "0b7907e3e67a2abe6f5d8a1f8e621b5860ff0844207c5bd7697d6876dfdeebf1",
-  "uploadedAt": "2026-11-12T05:22:11.451Z"
+  "url": "https://s3.origa.uwuwu.net/pr-screenshots/task-1691-merge/words-grid--grid-full--desktop-3bd13bd4.png",
+  "uploadedSha256": "3bd13bd455f76ff5e2e5584e72cf0a77ad4d04c7b6e9c9472a7625a1e8412355",
+  "uploadedAt": "2026-11-28T12:38:42.746Z"
 }

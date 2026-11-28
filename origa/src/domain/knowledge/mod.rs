@@ -16,6 +16,7 @@ mod stats_updater;
 #[cfg(test)]
 mod tests;
 pub mod vocabulary;
+mod word_identity;
 
 use card::ImportDedupKey;
 pub use card::{Card, CardType, StudyCard};
@@ -37,6 +38,7 @@ pub(crate) use lesson_builder::{distribute_new_cards, jlpt_sort_key};
 pub use phrase::PhraseCard;
 pub use stats_tracker::StatsTracker;
 pub use vocabulary::{VocabularyCard, install_precompute_for_cards};
+pub use word_identity::{WordIdentityScanGroup, WordIdentityScanReport, scan_duplicate_cards};
 
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};

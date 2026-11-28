@@ -1918,14 +1918,15 @@ input[type="submit"],
    The class is attached to the shell <main> by the SAME predicate that
    shows the bar (bottom_nav_visible_for) — the old fixed `pb-20` was
    smaller than the bar's real height (60px + inset) and let content end
-   UNDER the bar. Reset on ≥1024px, where the bar is lg-hidden. */
+   UNDER the bar. At ≥1024px the bar is `lg:hidden`, so its clearance is
+   replaced by the device inset: nothing else reserves the system zone. */
 .app-main-with-nav {
   padding-bottom: var(--bottom-nav-clearance);
 }
 
 @media (min-width: 1024px) {
   .app-main-with-nav {
-    padding-bottom: 0;
+    padding-bottom: var(--safe-bottom);
   }
 }
 

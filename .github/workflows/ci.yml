@@ -176,6 +176,14 @@ jobs:
               ${{ github.event_name != 'pull_request' ||
               steps.components.outputs.python == 'true' ||
               steps.components.outputs.ci == 'true' }}
+            # The production shell scripts are exercised by the Python geoip
+            # contract suite: a shell-only edit (wasm) and a test-only edit
+            # (python) both change what that suite proves.
+            run_busybox_tests: >-
+              ${{ github.event_name != 'pull_request' ||
+              steps.components.outputs.wasm == 'true' ||
+              steps.components.outputs.python == 'true' ||
+              steps.components.outputs.ci == 'true' }}
         steps:
             # PR-only: on tags/dispatch the step is skipped, its outputs
             # stay empty, and the `github.event_name != 'pull_request'`
@@ -553,6 +561,47 @@ jobs:
               # (local LLM server, machine-specific data paths — #847) that
               # crash collection on a runner and must not be picked up.
               run: uv run --project scripts pytest scripts/tests translator/scripts/test_judge_calibration.py
+
+    # The geoip contract suite runs under the GNU coreutils of the ubuntu
+    # runner (python-tests), while production runs the same script under
+    # busybox. Run the suite inside the Alpine image the production stage
+    # uses: /bin/sh is busybox ash there, and tail/grep/stat are busybox
+    # applets. pytest and curl are test-only additions, not baked into prod.
+    busybox-tests:
+        name: BusyBox shell tests
+        permissions:
+            contents: read
+        needs: [changes]
+        if: needs.changes.outputs.run_busybox_tests == 'true'
+        runs-on: ubuntu-24.04
+        timeout-minutes: 15
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v7
+
+            - name: Read production Alpine version
+              id: alpine
+              # Single source of truth: the last `FROM alpine:` is the final
+              # production stage (the earlier one builds thp_off). A bump in
+              # the Dockerfile moves this job with it — no second pin.
+              run: |
+                  image="$(awk '/^FROM alpine:/ { image=$2 } END { print image }' origa_ui/Dockerfile)"
+                  case "$image" in
+                      alpine:*) ;;
+                      *) echo "::error::No production 'FROM alpine:' in origa_ui/Dockerfile" >&2; exit 1 ;;
+                  esac
+                  echo "image=$image" >> "$GITHUB_OUTPUT"
+
+            - name: Run geoip contract against BusyBox
+              env:
+                  ALPINE_IMAGE: ${{ steps.alpine.outputs.image }}
+              run: |
+                  docker run --rm \
+                    -v "$PWD:/workspace:ro" -w /workspace \
+                    -e PYTHONDONTWRITEBYTECODE=1 \
+                    "$ALPINE_IMAGE" \
+                    sh -ec 'apk add --no-cache python3 py3-pytest curl >/dev/null &&
+                            python3 -m pytest -q -p no:cacheprovider scripts/tests/test_geoip.py'
 
     gate-completeness:
         name: CI Gate Completeness
@@ -1611,6 +1660,7 @@ jobs:
                 ios-check,
                 cdn-download,
                 python-tests,
+                busybox-tests,
                 gate-completeness,
                 test,
                 landing-test,
@@ -1658,6 +1708,7 @@ jobs:
                   gate "ios-check" "${{ needs.ios-check.result }}" "${{ needs.changes.outputs.run_ios_check }}"
                   gate "cdn-download" "${{ needs.cdn-download.result }}" "${{ needs.changes.outputs.run_cdn_download }}"
                   gate "python-tests" "${{ needs.python-tests.result }}" "${{ needs.changes.outputs.run_python_tests }}"
+                  gate "busybox-tests" "${{ needs.busybox-tests.result }}" "${{ needs.changes.outputs.run_busybox_tests }}"
                   gate "gate-completeness" "${{ needs.gate-completeness.result }}" "${{ needs.changes.outputs.run_ci }}"
                   gate "test" "${{ needs.test.result }}" "${{ needs.changes.outputs.run_test }}"
                   gate "landing-test" "${{ needs.landing-test.result }}" "${{ needs.changes.outputs.run_landing_test }}"
