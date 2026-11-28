@@ -1,9 +1,11 @@
-import { copyFile, mkdir } from "node:fs/promises";
+import { execFileSync } from "node:child_process";
+import { copyFile, mkdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { repoRoot } from "../shots/config.ts";
 import { buildStaticInput } from "../shots/coverage-input.ts";
 import { inventory } from "../shots/coverage-inventory.ts";
+import type { ProofContext } from "../shots/coverage-report.ts";
 import {
   checkStatic,
   compareManifest,
@@ -19,16 +21,45 @@ export interface CommandOptions {
 
 export type ManifestReader = (dir: string) => Promise<ShotEntry[]>;
 
+/** The gate's external facts: checkout HEAD and git ancestry, never the manifest. */
+export function localProofContext(runDir: string): ProofContext {
+  const head = (): string =>
+    execFileSync("git", ["rev-parse", "HEAD"], {
+      cwd: repoRoot,
+      encoding: "utf-8",
+    }).trim();
+  const expectedCommit = head();
+  return {
+    expectedCommit,
+    isAncestor: (commit: string, expected: string): boolean => {
+      try {
+        execFileSync("git", ["merge-base", "--is-ancestor", commit, expected], {
+          cwd: repoRoot,
+          stdio: "ignore",
+        });
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    readPng: (file: string) => readFile(file),
+    proofRoot: runDir,
+  };
+}
+
 export async function runCoverage(
   options: CommandOptions,
   readManifest: ManifestReader,
+  proofContext?: ProofContext,
 ): Promise<number> {
   const issues = checkStatic(await buildStaticInput());
   let proved: string[] = [];
   if (options.run) {
-    const manifestIssues = compareManifest(
+    if (!proofContext) throw new Error("--run needs an external proof context");
+    const manifestIssues = await compareManifest(
       inventory,
       await readManifest(options.run),
+      proofContext,
     );
     issues.push(...manifestIssues);
     proved = provedRows(inventory, manifestIssues);

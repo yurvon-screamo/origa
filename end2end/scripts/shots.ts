@@ -22,7 +22,7 @@ import { fileURLToPath } from "node:url";
 import { config as loadDotenv } from "dotenv";
 
 import { assertCaptureFlags } from "./shots-flags.ts";
-import { runCoverage, runStore } from "./shots-commands.ts";
+import { localProofContext, runCoverage, runStore } from "./shots-commands.ts";
 import { listDescriptors } from "../shots/catalog.ts";
 import { APP_PORT, SERVE_MODE, resolveCdnSource } from "../shots/config.ts";
 import { readExamRecords, resetExamTraces } from "../shots/examiner/examine.ts";
@@ -168,7 +168,11 @@ function listCommand(): number {
 }
 
 async function coverageCommand(options: Options): Promise<number> {
-  return await runCoverage(options, readManifestEntries);
+  return await runCoverage(
+    options,
+    readManifestEntries,
+    options.run ? localProofContext(options.run) : undefined,
+  );
 }
 
 async function storeCommand(options: Options): Promise<number> {
