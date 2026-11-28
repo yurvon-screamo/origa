@@ -2,7 +2,6 @@
 
 use tracing::Level;
 use tracing_subscriber::{Registry, layer::SubscriberExt};
-use tracing_wasm::{ConsoleConfig, WASMLayer, WASMLayerConfigBuilder};
 
 pub mod app;
 mod core;
@@ -19,6 +18,7 @@ mod sentry;
 mod store;
 #[cfg(all(target_arch = "wasm32", test))]
 mod test_support;
+mod tracing_console;
 mod ui_components;
 pub mod utils;
 
@@ -41,26 +41,22 @@ pub fn init_tracing() {
 
     sentry::init();
 
-    let mut builder = WASMLayerConfigBuilder::new();
+    // Level-aware console routing (task uwuwu#1454): the previous layer
+    // (`tracing-wasm`) sent every level through `console.log`, so native
+    // `error!` events never reached Sentry. The replacement routes ERROR →
+    // console.error + direct Sentry capture. Max level is pinned per build
+    // profile exactly as before: dev = DEBUG, release = INFO.
+    let max_level = if cfg!(debug_assertions) {
+        Level::DEBUG
+    } else {
+        Level::INFO
+    };
 
-    #[cfg(debug_assertions)]
-    {
-        builder
-            .set_max_level(Level::DEBUG)
-            .set_console_config(ConsoleConfig::ReportWithConsoleColor);
-    }
-
-    #[cfg(not(debug_assertions))]
-    {
-        builder
-            .set_max_level(Level::INFO)
-            .set_console_config(ConsoleConfig::ReportWithoutConsoleColor);
-    }
-
-    builder.set_report_logs_in_timings(false);
-    let config = builder.build();
-
-    let subscriber = Registry::default().with(WASMLayer::new(config));
+    let subscriber = Registry::default()
+        .with(tracing_subscriber::filter::LevelFilter::from_level(
+            max_level,
+        ))
+        .with(tracing_console::ConsoleSentryLayer::new());
     tracing::subscriber::set_global_default(subscriber)
         .expect("Не удалось установить глобальный subscriber для tracing");
 }

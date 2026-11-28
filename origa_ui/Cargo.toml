@@ -44,7 +44,6 @@ ammonia.workspace = true
 scraper.workspace = true
 ego-tree.workspace = true
 tracing.workspace = true
-tracing-wasm.workspace = true
 tracing-subscriber.workspace = true
 flate2.workspace = true
 futures.workspace = true

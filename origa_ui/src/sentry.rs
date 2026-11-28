@@ -94,7 +94,47 @@ pub(crate) fn init_with(dsn: &str, release: &str, environment: &str) {
     //    loader finishes, `window.Sentry` is undefined and the flush is a
     //    no-op; once loaded, `visibilitychange → hidden` and `pagehide`
     //    both push the queue out while the page is still alive.
-    let init_js = format!(
+    let init_js = build_init_js(dsn, release, environment);
+    if let Err(e) = js_sys::eval(&init_js) {
+        tracing::warn!("[sentry] failed to install sentryOnLoad: {:?}", e);
+        return;
+    }
+
+    // 2. Inject the loader script. `defer` is intentionally NOT set: it is a
+    //    no-op on dynamically-inserted <script> elements per HTML spec, and
+    //    `sentryOnLoad` above already gates the actual init.
+    let loader_url = format!("https://js.sentry-cdn.com/{public_key}.min.js");
+    if let Err(e) = inject_script(&document, &head, &loader_url) {
+        tracing::warn!("[sentry] failed to inject loader script: {:?}", e);
+        return;
+    }
+
+    tracing::info!(
+        "[sentry] enabled (release={}, environment={})",
+        release,
+        environment
+    );
+}
+
+/// Build the `sentryOnLoad` bootstrap JS executed before the loader script
+/// is injected (ADR-036 §4: installed BEFORE the script tag so a
+/// cache-served synchronous load cannot miss the callback).
+///
+/// SDK v10 note (audit uwuwu#1454): the loader serves the latest SDK and
+/// `captureConsoleIntegration` is no longer among its eagerly exported
+/// functions (a `typeof` guard silently yielded an empty integrations
+/// list), so error delivery does NOT go through the console capture path.
+/// Error events are instead produced directly by the WASM layer
+/// (`tracing_console`) calling the eagerly exported `captureException` —
+/// the same surface the panic bridge proves in production.
+///
+/// `beforeSend` fingerprints the stack-less `RuntimeError: unreachable`
+/// family (RUST-4/R in the audit) into a single group: the raw frames are
+/// `wasm-function[N]` addresses without symbols, so Sentry's stack
+/// grouping split one failure class into sibling issues. Page-level signal
+/// stays available through the event's `transaction`/`url` tags.
+pub(crate) fn build_init_js(dsn: &str, release: &str, environment: &str) -> String {
+    format!(
         r#"(function() {{
             if (window.__sentryFlushInstalled) {{
                 return;
@@ -118,14 +158,13 @@ pub(crate) fn init_with(dsn: &str, release: &str, environment: &str) {
             }});
             window.addEventListener('pagehide', flushPending);
             window.sentryOnLoad = function() {{
-                // captureConsoleIntegration routes tracing-wasm's console.error
-                // output (which is where all WASM tracing::error! calls land via
-                // the WASMLayer) into Sentry as error events. console.warn/info
-                // become breadcrumbs via the default Breadcrumbs integration.
-                var integrations = [];
-                if (typeof Sentry.captureConsoleIntegration === 'function') {{
-                    integrations.push(Sentry.captureConsoleIntegration({{ levels: ['error'] }}));
-                }}
+                // WASM `tracing::error!` events are delivered directly by the
+                // tracing layer (`tracing_console`) through the eager
+                // `captureException` export — NOT via a console capture
+                // integration (SDK v10 lazy-loads it, so a `typeof` check
+                // yields nothing; audit uwuwu#1454). `console.warn/info` keep
+                // landing in breadcrumbs via the default Breadcrumbs
+                // integration.
                 Sentry.init({{
                     dsn: "{dsn}",
                     release: "{release}",
@@ -133,31 +172,27 @@ pub(crate) fn init_with(dsn: &str, release: &str, environment: &str) {
                     sendDefaultPii: false,
                     tracesSampleRate: 1.0,
                     enableLogs: true,
-                    integrations: integrations
+                    beforeSend: function(event) {{
+                        // Stack-less WASM traps group poorly: every
+                        // "RuntimeError: unreachable" lands in one card so
+                        // one failure class is one issue (page context stays
+                        // on the event's tags).
+                        try {{
+                            var msg = event && event.exception
+                                && event.exception.values
+                                && event.exception.values[0]
+                                && event.exception.values[0].value || '';
+                            if (msg.indexOf('RuntimeError: unreachable') === 0) {{
+                                event.fingerprint = ['wasm-unreachable'];
+                            }}
+                        }} catch (e) {{ /* never drop an event over grouping */ }}
+                        return event;
+                    }}
                 }});
                 Sentry.setTag("layer", "ui");
             }};
         }})();"#
-    );
-    if let Err(e) = js_sys::eval(&init_js) {
-        tracing::warn!("[sentry] failed to install sentryOnLoad: {:?}", e);
-        return;
-    }
-
-    // 2. Inject the loader script. `defer` is intentionally NOT set: it is a
-    //    no-op on dynamically-inserted <script> elements per HTML spec, and
-    //    `sentryOnLoad` above already gates the actual init.
-    let loader_url = format!("https://js.sentry-cdn.com/{public_key}.min.js");
-    if let Err(e) = inject_script(&document, &head, &loader_url) {
-        tracing::warn!("[sentry] failed to inject loader script: {:?}", e);
-        return;
-    }
-
-    tracing::info!(
-        "[sentry] enabled (release={}, environment={})",
-        release,
-        environment
-    );
+    )
 }
 
 /// Forward a panic message to Sentry as a captured exception.
@@ -288,6 +323,60 @@ mod tests {
     #[test]
     fn extract_public_key_rejects_empty_dsn() {
         assert_eq!(extract_public_key(""), None);
+    }
+
+    /// The bootstrap JS carries the `beforeSend` fingerprint for the
+    /// stack-less `RuntimeError: unreachable` family (uwuwu#1454): without
+    /// it Sentry splits one failure class across sibling issues (RUST-4/R
+    /// in the 30-day audit window).
+    #[test]
+    fn init_js_contains_unreachable_fingerprint() {
+        let js = build_init_js(
+            "https://abc123def456@o789.ingest.sentry.io/42",
+            "1.0.0",
+            "test",
+        );
+        assert!(
+            js.contains("wasm-unreachable"),
+            "beforeSend must fingerprint the unreachable family"
+        );
+        assert!(
+            js.contains("RuntimeError: unreachable"),
+            "fingerprint trigger must match the raw trap message"
+        );
+    }
+
+    /// The dead console-capture path must be GONE from the bootstrap: SDK
+    /// v10 lazy-loads `captureConsoleIntegration`, so the `typeof` guard
+    /// silently produced an empty integrations list for months (uwuwu#1454,
+    /// delta-round 2). Error delivery now goes through the direct
+    /// `captureException` bridge in the tracing layer — the bootstrap must
+    /// not reference the integration at all, and its comment must name the
+    /// real delivery path.
+    #[test]
+    fn init_js_has_no_console_capture_path() {
+        let js = build_init_js(
+            "https://abc123def456@o789.ingest.sentry.io/42",
+            "1.0.0",
+            "test",
+        );
+        assert!(
+            !js.contains("captureConsoleIntegration"),
+            "captureConsoleIntegration must not be configured (dead in SDK v10)"
+        );
+        assert!(
+            js.contains("tracing_console"),
+            "bootstrap comment must document the direct capture bridge"
+        );
+    }
+
+    /// DSN/release/environment interpolate into the bootstrap config.
+    #[test]
+    fn init_js_interpolates_config() {
+        let js = build_init_js("https://key@host/42", "9.9.9", "staging");
+        assert!(js.contains("dsn: \"https://key@host/42\""));
+        assert!(js.contains("release: \"9.9.9\""));
+        assert!(js.contains("environment: \"staging\""));
     }
 }
 
