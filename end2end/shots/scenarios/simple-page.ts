@@ -10,6 +10,18 @@ export async function waitForAppReady(page: Page): Promise<void> {
     .catch(() => undefined);
 }
 
+/**
+ * The home mount sync is asynchronous: give the toast a short window to
+ * appear before asserting it has gone. One wait for every home screenshot —
+ * a toast caught mid-fade is a false diff on the next PR.
+ */
+export async function waitForSyncToast(page: Page): Promise<void> {
+  await page.waitForTimeout(300);
+  await expect(page.locator('[data-testid^="toast-"]')).toHaveCount(0, {
+    timeout: 15_000,
+  });
+}
+
 /** Captures one marker-driven screen of a simple page. */
 export async function captureSimplePage(
   page: Page,

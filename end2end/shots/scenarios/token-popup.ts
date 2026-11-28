@@ -16,7 +16,13 @@ export const tokenPopupScenario: ShotScenario = {
       .first()
       .waitFor({ state: "visible", timeout: 60_000 });
     await page.waitForTimeout(3_000);
-    const token = page.locator(".token-word .token-surface").first();
+    // Token surfaces carry no data-testid; pick a verified particle so the
+    // capture shows the popup state added in uwuwu#938, not a noun popup.
+    const particle = /^(は|が|を|に|で|と|の|か|よ|ね|も|から|まで|へ|や)$/;
+    const token = page
+      .locator(".token-word .token-surface")
+      .filter({ hasText: particle })
+      .first();
     await token.waitFor({ state: "visible", timeout: 30_000 });
     await token.click();
     await page

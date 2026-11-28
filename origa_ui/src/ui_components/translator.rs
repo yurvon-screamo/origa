@@ -7,7 +7,7 @@ use leptos::task::spawn_local;
 use leptos::wasm_bindgen::JsCast;
 use leptos_use::use_event_listener;
 use origa::domain::{
-    NativeLanguage, TokenTranslation, katakana_to_hiragana, lookup_precomputed,
+    NativeLanguage, PartOfSpeech, TokenTranslation, katakana_to_hiragana, lookup_precomputed,
     lookup_tokens_translations, tokenize_text,
 };
 
@@ -36,6 +36,42 @@ fn has_kanji(text: &str) -> bool {
             '\u{4E00}'..='\u{9FFF}' | '\u{3400}'..='\u{4DBF}' | '\u{F900}'..='\u{FAFF}'
         )
     })
+}
+
+/// Particles are excluded from `is_vocabulary_word()`, so their dictionary
+/// entries were unreachable. Only surfaces whose article is verified to be
+/// the particle's own sense are listed here: a bare `Particle` POS also covers
+/// homonyms (な as the copula, さ as a syllable name, い as a pronoun). Other
+/// surfaces keep the honest plain render.
+const VERIFIED_PARTICLE_SURFACES: &[&str] = &[
+    "は",
+    "が",
+    "を",
+    "に",
+    "で",
+    "と",
+    "の",
+    "か",
+    "よ",
+    "ね",
+    "も",
+    "から",
+    "まで",
+    "へ",
+    "や",
+    "けど",
+    "けれど",
+    "ので",
+    "のに",
+];
+
+fn token_has_popup(token: &TokenTranslation) -> bool {
+    if token.pos.is_vocabulary_word() || token.grammar_label.is_some() {
+        return true;
+    }
+    token.pos == PartOfSpeech::Particle
+        && VERIFIED_PARTICLE_SURFACES.contains(&token.surface_form.as_str())
+        && token.translation.is_some()
 }
 
 /// Render phase of the translator: while the tokenizer dictionary warms
@@ -202,7 +238,7 @@ pub fn TranslatorText(
                         let translation_text = token.translation.clone();
                         let grammar_label = token.grammar_label.clone();
                         let grammar_description = token.grammar_description.clone();
-                        let clickable = token.pos.is_vocabulary_word() || grammar_label.is_some();
+                        let clickable = token_has_popup(&token);
                         let has_kanji = has_kanji(&surface);
                         let show_base = base_form != surface;
 
@@ -391,6 +427,9 @@ fn TokenPopup(
     on_report: Option<Callback<()>>,
 ) -> impl IntoView {
     let i18n = use_i18n();
+    // Kana particles have the same reading as their surface; printing both
+    // lines would duplicate them in the popup.
+    let reading = (reading != surface).then_some(reading);
     let popup_ref: NodeRef<leptos::html::Div> = NodeRef::new();
     let shift_x: RwSignal<f64> = RwSignal::new(0.0);
 
@@ -421,7 +460,11 @@ fn TokenPopup(
             on:click=move |ev: leptos::ev::MouseEvent| ev.stop_propagation()
         >
             <div class="token-popup-surface">{surface}</div>
-            <div class="token-popup-reading">{reading}</div>
+            {move || {
+                reading.clone().map(|value| view! {
+                    <div class="token-popup-reading">{value}</div>
+                }.into_any()).unwrap_or_else(|| ().into_any())
+            }}
             {move || {
                 base_form.get().map(|bf| view! {
                     <div class="token-popup-reading">{bf}</div>
@@ -491,7 +534,20 @@ fn TokenPopup(
 
 #[cfg(all(test, not(target_arch = "wasm32")))]
 mod tests {
-    use super::add_word_target;
+    use super::{VERIFIED_PARTICLE_SURFACES, add_word_target, token_has_popup};
+    use origa::domain::{PartOfSpeech, TokenTranslation};
+
+    fn token(pos: PartOfSpeech, surface: &str, base: &str, translation: &str) -> TokenTranslation {
+        TokenTranslation {
+            surface_form: surface.to_string(),
+            base_form: base.to_string(),
+            reading: String::new(),
+            pos,
+            translation: (!translation.is_empty()).then(|| translation.to_string()),
+            grammar_label: None,
+            grammar_description: None,
+        }
+    }
 
     /// The quick-add target is the dictionary form (base); the surface
     /// fallback is a defensive guard — the tokenizer guarantees a
@@ -506,5 +562,146 @@ mod tests {
     fn add_word_target_falls_back_to_surface() {
         assert_eq!(add_word_target("", "食べた"), "食べた");
         assert_eq!(add_word_target("  ", "魚"), "魚");
+    }
+
+    #[test]
+    fn verified_particle_with_dictionary_entry_opens_popup() {
+        let token = token(
+            PartOfSpeech::Particle,
+            "よ",
+            "よ",
+            "частица, обозначающая вопрос или подтверждение",
+        );
+
+        assert!(token_has_popup(&token));
+    }
+
+    #[test]
+    fn unverified_particle_with_dictionary_entry_stays_plain() {
+        let token = token(
+            PartOfSpeech::Particle,
+            "な",
+            "な",
+            "являться / быть (связка)",
+        );
+
+        assert!(!token_has_popup(&token));
+    }
+
+    #[test]
+    fn verified_particle_with_different_base_opens_popup() {
+        let token = token(PartOfSpeech::Particle, "けど", "けれど", "но");
+
+        assert!(token_has_popup(&token));
+    }
+
+    #[test]
+    fn particle_without_dictionary_entry_stays_plain() {
+        let token = token(PartOfSpeech::Particle, "未知", "未知", "");
+
+        assert!(!token_has_popup(&token));
+    }
+
+    #[test]
+    fn auxiliary_with_base_form_translation_stays_plain() {
+        let token = token(
+            PartOfSpeech::AuxiliaryVerb,
+            "ん",
+            "ず",
+            "не (классическое отрицание)",
+        );
+
+        assert!(!token_has_popup(&token));
+    }
+
+    #[test]
+    fn grammar_labelled_token_keeps_popup() {
+        let mut token = token(PartOfSpeech::AuxiliaryVerb, "ませ", "ます", "");
+        token.grammar_label = Some("～ません".to_string());
+
+        assert!(token_has_popup(&token));
+    }
+
+    /// Contract pin for uwuwu#938: the verified whitelist must be exactly the
+    /// surfaces declared in the task — every one opens its popup, a declared
+    /// surface without an article stays plain, and the named homonyms never
+    /// become clickable. Both adding and removing a surface needs an explicit
+    /// update here — that is the point of a verified-only gate.
+    #[test]
+    fn declared_particle_surface_contract() {
+        const DECLARED: &[&str] = &[
+            "は",
+            "が",
+            "を",
+            "に",
+            "で",
+            "と",
+            "の",
+            "か",
+            "よ",
+            "ね",
+            "も",
+            "から",
+            "まで",
+            "へ",
+            "や",
+            "けど",
+            "けれど",
+            "ので",
+            "のに",
+        ];
+        assert_eq!(
+            DECLARED, VERIFIED_PARTICLE_SURFACES,
+            "verified whitelist drifted from the declared uwuwu#938 contract"
+        );
+        for surface in DECLARED {
+            let token = token(PartOfSpeech::Particle, surface, surface, "статья");
+            assert!(
+                token_has_popup(&token),
+                "declared particle {surface} lost its popup"
+            );
+        }
+        // The article conjunct of the gate: even a verified surface stays
+        // plain when the dictionary has no entry for it.
+        let no_article = token(PartOfSpeech::Particle, "は", "は", "");
+        assert!(
+            !token_has_popup(&no_article),
+            "verified particle without an article must stay plain"
+        );
+        for surface in ["な", "さ", "い", "ぜ", "もの"] {
+            let token = token(PartOfSpeech::Particle, surface, surface, "статья");
+            assert!(
+                !token_has_popup(&token),
+                "homonym {surface} must stay plain"
+            );
+        }
+    }
+
+    /// The POS conjunct is not redundant: a verified surface reaches the
+    /// popup only as a Particle. With another POS the same surface and
+    /// article must stay plain — the whitelist alone is not a gate.
+    #[test]
+    fn verified_surface_with_non_particle_pos_stays_plain() {
+        for pos in [
+            PartOfSpeech::Suffix,
+            PartOfSpeech::AuxiliaryVerb,
+            PartOfSpeech::Other,
+            PartOfSpeech::Unspecified,
+        ] {
+            let token = token(pos.clone(), "から", "から", "статья");
+            assert!(
+                !token_has_popup(&token),
+                "verified surface with POS {pos:?} must stay plain"
+            );
+        }
+    }
+
+    /// The first conjunct: vocabulary POS keeps its popup regardless of the
+    /// particle whitelist.
+    #[test]
+    fn vocabulary_word_with_article_opens_popup() {
+        let token = token(PartOfSpeech::Noun, "魚", "魚", "рыба");
+
+        assert!(token_has_popup(&token));
     }
 }

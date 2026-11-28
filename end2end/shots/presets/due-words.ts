@@ -8,7 +8,7 @@ const DUE_LIMIT = 24;
 const iso = (ms: number) =>
   new Date(ms).toISOString().replace(/\.\d{3}Z$/, "Z");
 
-/** Words that anchor the two seeded phrases of the phrase-listen probe. */
+/** Words that anchor seeded phrases in the #1753 reachability probes. */
 const ANCHOR_WORDS = ["今年", "夏", "分かる"];
 
 type MemoryState = {
@@ -57,19 +57,20 @@ function makeKnown(state: MemoryState): void {
   if (state.difficulty) state.difficulty.value = 4.0;
 }
 
+/** Returns true when this card was one of the due word cards. */
 function patchCard(
   card: SeedCard,
-  due: boolean,
+  isDue: boolean,
   dueDate: string,
   pushedDate: string,
   stamp: string,
 ): boolean {
   const state = card.memory_history?.current_state;
   if (!state) return false;
-  state.next_review_date = due ? dueDate : pushedDate;
-  if (due) makeKnown(state);
+  state.next_review_date = isDue ? dueDate : pushedDate;
+  if (isDue) makeKnown(state);
   if (card.memory_history) card.memory_history.last_review_date = stamp;
-  return due;
+  return isDue;
 }
 
 /**

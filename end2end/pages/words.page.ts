@@ -236,6 +236,14 @@ export class WordsPage extends BasePage {
     await expect(this.noResultsFeedback).toBeVisible({ timeout: 10_000 });
   }
 
+  /** Analysis must collapse script and inflection variants into one result. */
+  async expectSingleAnalyzedWord(): Promise<void> {
+    await this.analyzedWordItems
+      .first()
+      .waitFor({ state: "visible", timeout: 5000 });
+    expect(await this.analyzedWordItems.count()).toBe(1);
+  }
+
   async selectFirstWord(): Promise<void> {
     const firstItem = this.analyzedWordItems.first();
     await firstItem.waitFor({ state: "visible", timeout: 5000 });

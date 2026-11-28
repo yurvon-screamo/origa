@@ -12,6 +12,7 @@ export const PRESET_IDS = [
   "due-examples",
   "due-words",
   "fresh",
+  "grammar-practice",
   "onboarded",
   "scoring-n5",
   "onboarded-history",

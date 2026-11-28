@@ -144,7 +144,7 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
     title: "Форма обратной связи в уроке",
     route: "/lesson",
     locale: "ru-RU",
-    preset: "with-word",
+    preset: "due-corpus",
   },
   "token-popup": {
     id: "token-popup",
@@ -179,7 +179,7 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
     title: "Единый урок: знакомство, тренировка, тело",
     route: "/lesson",
     locale: "ru-RU",
-    preset: "with-word",
+    preset: "acquaintance-hand",
   },
   "kanji-writing-practice": {
     id: "kanji-writing-practice",
@@ -221,7 +221,7 @@ export const descriptors: Record<string, ScenarioDescriptor> = {
     title: "Деталь грамматики: вкладки, практика, удаление",
     route: "/grammar/:id",
     locale: "ru-RU",
-    preset: "acquaintance-hand",
+    preset: "grammar-practice",
   },
   "words-add": {
     id: "words-add",

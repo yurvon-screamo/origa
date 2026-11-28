@@ -18,7 +18,7 @@ use leptos::task::tick;
 use wasm_bindgen_test::*;
 
 use crate::i18n::Locale;
-use crate::test_support::{create_wrapper, mount_to_wrapper, provide_i18n};
+use crate::test_support::{create_wrapper, mount_disposable, mount_to_wrapper, provide_i18n};
 use crate::ui_components::{
     FuriganaText, LevelSelector, Stepper, StepperStep, TranslatorText, WordTranslations,
 };
@@ -35,6 +35,59 @@ where
         provide_i18n();
         f()
     });
+}
+
+/// Isolated mounts have no CDN loader. Install a minimal vocabulary so particle
+/// tokens take the same popup path as in the app; the first call wins the
+/// `OnceLock`, later calls are no-ops.
+fn install_test_vocabulary() {
+    use origa::dictionary::vocabulary::{VocabularyChunkData, init_vocabulary};
+
+    let empty = "{}".to_string();
+    let particles = r#"{
+        "が": {"ru": {"t": ["частица, указывающая на подлежащее"], "d": ""}},
+        "よ": {"ru": {"t": ["частица, обозначающая вопрос или подтверждение"], "d": ""}},
+        "な": {"ru": {"t": ["быть, являться (связка)"], "d": ""}}
+    }"#;
+    let _ = init_vocabulary(VocabularyChunkData {
+        chunk_01: particles.to_string(),
+        chunk_02: empty.clone(),
+        chunk_03: empty.clone(),
+        chunk_04: empty.clone(),
+        chunk_05: empty.clone(),
+        chunk_06: empty.clone(),
+        chunk_07: empty.clone(),
+        chunk_08: empty.clone(),
+        chunk_09: empty.clone(),
+        chunk_10: empty.clone(),
+        chunk_11: empty,
+    });
+}
+
+/// Offline entry for the surface-gate DOM test: `な` is a Particle POS whose
+/// article is the copula (homonym, must stay plain), `よ` is a verified
+/// surface with a particle article (must open the popup). Both share one
+/// mount so the test proves the vocabulary really resolved — without the
+/// positive control a `None` translation would pass every negative assert.
+fn install_particle_gate_entry() {
+    use origa::domain::{
+        PartOfSpeech, PrecomputedEntry, PrecomputedToken, install_precomputed_entry,
+    };
+    install_precomputed_entry(
+        "なよ",
+        PrecomputedEntry {
+            furigana_spans: vec![],
+            tokens: ["な", "よ"]
+                .into_iter()
+                .map(|surface| PrecomputedToken {
+                    surface: surface.to_string(),
+                    base: surface.to_string(),
+                    reading: surface.to_string(),
+                    pos: PartOfSpeech::Particle,
+                })
+                .collect(),
+        },
+    );
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -621,16 +674,16 @@ async fn i18n_locale_switch_renders_korean_and_vietnamese() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// TranslatorText — quick-add button (#528+)
+// TranslatorText — popup surface gate and quick-add button (#528+, uwuwu#938)
 // ═══════════════════════════════════════════════════════════════════════
 
-mod translator_quick_add {
+mod translator_popup_gate {
     use super::*;
     use crate::test_support::{mount_with_router_and_stores, test_user};
 
     /// Offline precomputed entry: 魚 (Noun, vocabulary word) + が
-    /// (Particle, grammar token) — the two gate sides of the quick-add
-    /// button in one string.
+    /// (Particle with a verified article) — the two sides of the popup
+    /// quick-add gate in one string.
     fn install_entry() {
         use origa::domain::{
             PartOfSpeech, PrecomputedEntry, PrecomputedToken, install_precomputed_entry,
@@ -657,15 +710,19 @@ mod translator_quick_add {
         );
     }
 
-    async fn wait_for_tokens(wrapper: &web_sys::Element) {
+    async fn wait_for_selector(wrapper: &web_sys::Element, selector: &str) {
         for _ in 0..10 {
             tick().await;
-            if wrapper.query_selector(".token-surface").unwrap().is_some() {
+            if wrapper.query_selector(selector).unwrap().is_some() {
                 return;
             }
             crate::utils::yield_to_browser().await;
         }
-        panic!("translator tokens did not render");
+        panic!("translator selector did not render: {selector}");
+    }
+
+    async fn wait_for_tokens(wrapper: &web_sys::Element) {
+        wait_for_selector(wrapper, ".token-surface").await;
     }
 
     async fn open_popup(wrapper: &web_sys::Element, surface: &str) {
@@ -691,9 +748,13 @@ mod translator_quick_add {
     /// absent — the FeedbackContext pattern: no shell, no action buttons.
     #[wasm_bindgen_test]
     async fn quick_add_absent_without_repository_context() {
+        install_test_vocabulary();
         install_entry();
         let wrapper = create_wrapper();
-        mount_with_i18n(&wrapper, || {
+        // Disposable: TranslatorText installs document click/keydown
+        // listeners — a leak mount would leave them firing in later tests.
+        let _mount = mount_disposable(&wrapper, || {
+            provide_i18n();
             view! {
                 <TranslatorText
                     text="魚が"
@@ -713,10 +774,12 @@ mod translator_quick_add {
     }
 
     /// With the repository context the button renders for a vocabulary
-    /// token (Noun) — and NOT for the grammar token (Particle) in the
-    /// same popup pipeline: pos.is_vocabulary_word() is the gate.
+    /// token (Noun) — and NOT for a particle, even when its dictionary
+    /// article makes the token clickable: pos.is_vocabulary_word() is the
+    /// quick-add gate.
     #[wasm_bindgen_test]
     async fn quick_add_renders_for_vocabulary_token_only() {
+        install_test_vocabulary();
         install_entry();
         let wrapper = create_wrapper();
         // Disposable mount: the handle must stay alive through the
@@ -744,20 +807,120 @@ mod translator_quick_add {
             "vocabulary token shows the quick-add button"
         );
 
-        // Grammar token (Particle が): `clickable` requires a vocabulary
-        // POS or a grammar label — a bare particle renders as plain text
-        // (no .token-surface, no popup, structurally no button). That is
-        // the grammar side of the quick-add gate.
-        let particle = wrapper
-            .query_selector(".token-plain")
+        // Particle が has a verified article: it is clickable and opens the
+        // popup, but the quick-add button stays gated by the vocabulary POS.
+        let surfaces = wrapper.query_selector_all(".token-surface").unwrap();
+        assert_eq!(surfaces.length(), 2, "noun and particle are clickable");
+        open_popup(&wrapper, "が").await;
+        let popup = wrapper
+            .query_selector(".token-popup")
             .unwrap()
-            .expect("particle renders as a plain token");
+            .expect("particle popup opened after the click");
         assert!(
-            particle
+            popup
+                .query_selector(".token-popup-reading")
+                .unwrap()
+                .is_none(),
+            "kana particle does not repeat its surface as a reading line"
+        );
+        assert!(
+            popup
                 .text_content()
                 .as_deref()
-                .is_some_and(|t| t.contains('が')),
-            "the plain token is the particle"
+                .is_some_and(|t| t.contains("частица, указывающая на подлежащее")),
+            "particle popup renders its dictionary article"
+        );
+        let grammar_btn = wrapper
+            .query_selector("[data-testid=\"token-popup-add-word\"]")
+            .unwrap();
+        assert!(
+            grammar_btn.is_none(),
+            "particle never shows the quick-add button"
+        );
+    }
+
+    /// The surface whitelist must also hold in the DOM: in one mount the
+    /// verified `よ` opens its popup while the `な` homonym — same POS, same
+    /// article-bearing fixture — stays plain. The positive half is the
+    /// control that the vocabulary really resolved in this test.
+    #[wasm_bindgen_test]
+    async fn homonym_particle_stays_plain_in_dom() {
+        use wasm_bindgen::JsCast;
+        install_test_vocabulary();
+        install_particle_gate_entry();
+        let wrapper = create_wrapper();
+        let _mount = mount_disposable(&wrapper, || {
+            provide_i18n();
+            view! {
+                <TranslatorText
+                    text="なよ"
+                    native_language=Signal::derive(|| origa::domain::NativeLanguage::Russian)
+                />
+            }
+            .into_any()
+        });
+        wait_for_tokens(&wrapper).await;
+        wait_for_selector(&wrapper, ".token-plain").await;
+
+        let surfaces = wrapper.query_selector_all(".token-surface").unwrap();
+        assert_eq!(
+            surfaces.length(),
+            1,
+            "only the verified particle is clickable"
+        );
+        assert_eq!(
+            surfaces.get(0).unwrap().text_content().as_deref(),
+            Some("よ"),
+            "the clickable surface is よ"
+        );
+        let plains = wrapper.query_selector_all(".token-plain").unwrap();
+        assert_eq!(plains.length(), 1, "only the homonym is plain");
+        assert_eq!(
+            plains.get(0).unwrap().text_content().as_deref(),
+            Some("な"),
+            "the plain surface is the homonym な"
+        );
+
+        // Positive control: the verified surface's article resolves and
+        // renders — a green negative assert cannot come from missing data.
+        let verified = surfaces
+            .get(0)
+            .unwrap()
+            .dyn_ref::<web_sys::HtmlElement>()
+            .expect("clickable surface is an HtmlElement")
+            .clone();
+        verified.click();
+        tick().await;
+        let popup = wrapper
+            .query_selector(".token-popup")
+            .unwrap()
+            .expect("verified particle popup opened");
+        assert!(
+            popup
+                .text_content()
+                .as_deref()
+                .is_some_and(|t| t.contains("частица, обозначающая вопрос или подтверждение")),
+            "verified particle popup renders its dictionary article"
+        );
+
+        verified.click();
+        tick().await;
+        assert!(
+            wrapper.query_selector(".token-popup").unwrap().is_none(),
+            "second click closes the popup"
+        );
+
+        let plain = plains
+            .get(0)
+            .unwrap()
+            .dyn_ref::<web_sys::HtmlElement>()
+            .expect("plain token is an HtmlElement")
+            .clone();
+        plain.click();
+        tick().await;
+        assert!(
+            wrapper.query_selector(".token-popup").unwrap().is_none(),
+            "clicking a plain homonym opens no popup"
         );
     }
 }

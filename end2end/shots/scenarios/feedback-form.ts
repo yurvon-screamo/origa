@@ -1,3 +1,5 @@
+import { expect } from "@playwright/test";
+
 import { LessonPage } from "../../pages/lesson.page.ts";
 import { descriptors } from "../catalog.ts";
 import type { ShotScenario } from "../scenario.ts";
@@ -5,15 +7,16 @@ import { waitForAppReady } from "./simple-page.ts";
 
 /**
  * The feedback channel of the lesson: the report button in the lesson
- * header, the opened modal and the token popup with its report line.
+ * header, the opened modal and its filled state.
  *
- * The profile behind the screens has one word, so the lesson has a hand to
- * show (see the `with-word` preset).
+ * The `due-corpus` preset opens the lesson straight into the review
+ * body. The earlier `with-word` hand had to be walked to the reveal
+ * before the modal would open; with a due queue the report entry is
+ * reachable in the card phase the screen documents.
  */
 export const feedbackFormScenario: ShotScenario = {
   ...descriptors["feedback-form"],
   async run({ page }, sink) {
-    // Start a lesson.
     await page.goto("/lesson");
     await page
       .getByTestId("lesson-header")
@@ -22,39 +25,17 @@ export const feedbackFormScenario: ShotScenario = {
     await lesson.expectLessonVisible();
     await waitForAppReady(page);
 
-    // 1) Lesson header with the report button (question phase: disabled).
+    // 1) Lesson header with the report button (question phase).
     await page
       .getByTestId("lesson-report-btn")
       .waitFor({ state: "visible", timeout: 60_000 });
     await sink.shot("lesson-header-report-disabled");
 
-    // Walk the acquaintance presentation to the training reveal.
-    await page
-      .getByTestId("acquaintance-view")
-      .waitFor({ state: "visible", timeout: 30_000 });
-    const next = page.getByTestId("acquaintance-next-btn");
-    for (let index = 0; index < 20; index++) {
-      await next.click({ timeout: 3_000 }).catch(() => undefined);
-      const training = await page
-        .getByTestId("acquaintance-training")
-        .waitFor({ state: "visible", timeout: 1_000 })
-        .then(() => true)
-        .catch(() => false);
-      if (training) break;
-    }
-    await page
-      .getByTestId("acquaintance-training")
-      .waitFor({ state: "visible", timeout: 15_000 });
-    const reveal = page.getByTestId("acquaintance-reveal-btn");
-    await reveal.waitFor({ state: "visible", timeout: 30_000 });
-    await reveal.click();
-    await page.waitForTimeout(500);
-
-    // 2) The feedback modal opened from the lesson header.
+    // 2) The modal opened from the lesson header.
     await page.getByTestId("lesson-report-btn").click();
-    await page
-      .getByTestId("feedback-modal")
-      .waitFor({ state: "visible", timeout: 10_000 });
+    await expect(page.getByTestId("feedback-modal")).toBeVisible({
+      timeout: 15_000,
+    });
     await sink.shot("feedback-modal-subject");
 
     // 3) The same modal with a filled message.
