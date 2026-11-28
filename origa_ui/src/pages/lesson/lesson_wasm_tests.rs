@@ -862,6 +862,86 @@ fn yesno_fixture(is_correct: bool) -> origa::domain::YesNoCard {
     )
 }
 
+/// The wasm harness mounts into bare HTML without the built stylesheet.
+/// Inject the real one so computed margins match the shipped app.
+fn inject_lesson_stylesheet() {
+    let doc = document();
+    let head = doc.head().expect("test page has a <head>");
+    if head
+        .query_selector("style[data-app-css]")
+        .expect("querySelector on <head>")
+        .is_some()
+    {
+        return;
+    }
+    let style = doc.create_element("style").expect("<style> creates");
+    style.set_attribute("data-app-css", "").expect("attr sets");
+    style.set_text_content(Some(include_str!("../../../input.css")));
+    head.append_child(&style).expect("<style> appends");
+}
+
+fn computed_margin_top(element: &web_sys::Element) -> String {
+    web_sys::window()
+        .expect("window in browser test")
+        .get_computed_style(element)
+        .expect("getComputedStyle resolves")
+        .expect("element has a computed style")
+        .get_property_value("margin-top")
+        .expect("margin-top is a string")
+}
+
+#[wasm_bindgen_test]
+async fn yesno_action_rows_share_one_gap_below_the_card() {
+    // Arrange
+    inject_lesson_stylesheet();
+    let wrapper = create_wrapper();
+    mount_with_i18n(&wrapper, || {
+        view! {
+            <YesNoCardView
+                yesno_card=yesno_fixture(true)
+                show_result=Signal::from(false)
+                selected_answer=None
+                on_answer=Callback::new(|_: bool| {})
+                on_dont_know=Callback::new(|()| {})
+                dont_know_selected=Signal::from(false)
+                native_language=origa::domain::NativeLanguage::Russian
+                known_kanji=Signal::derive(HashSet::new)
+            />
+        }
+        .into_any()
+    });
+    tick().await;
+
+    // Act
+    let no_button = wrapper
+        .query_selector("[data-testid=\"yesno-no-btn\"]")
+        .unwrap()
+        .expect("НЕТ button renders");
+    let no_row = no_button.parent_element().expect("row has a parent");
+    let dont_know = wrapper
+        .query_selector("[data-testid=\"yesno-dont-know-btn\"]")
+        .unwrap()
+        .expect("«Не знаю» button renders");
+    let card = wrapper
+        .query_selector("[data-testid=\"lesson-card-root\"]")
+        .unwrap()
+        .expect("lesson card renders");
+    let no_margin = computed_margin_top(&no_row);
+    let dont_know_margin = computed_margin_top(&dont_know);
+    let gap = no_row.get_bounding_client_rect().top() - card.get_bounding_client_rect().bottom();
+
+    // Assert
+    assert_eq!(
+        dont_know_margin, "16px",
+        "the fallback row keeps its 16px gap"
+    );
+    assert_eq!(
+        no_margin, dont_know_margin,
+        "both action rows must share the same gap below the card"
+    );
+    assert!(gap >= 12.0, "the action rows must clear the card border");
+}
+
 #[wasm_bindgen_test]
 async fn yesno_card_view_shows_statement_and_buttons() {
     let wrapper = create_wrapper();
