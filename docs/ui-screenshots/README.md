@@ -8,10 +8,10 @@
 
 | Экран | Сценарий | Вьюпорт | Локаль | Размер | Снято | Коммит | Ссылка |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| words-full | words | mobile | vi-VN | 390×844 | 2026-11-28T14:57:20.482Z | 829c6ae1 | не загружен |
-| words | words | mobile | vi-VN | 390×844 | 2026-11-28T14:57:20.393Z | 829c6ae1 | не загружен |
-| words-full | words | mobile | en-US | 390×844 | 2026-11-28T14:55:13.138Z | 829c6ae1 | не загружен |
-| words | words | mobile | en-US | 390×844 | 2026-11-28T14:55:13.052Z | 829c6ae1 | не загружен |
+| words-full | words | mobile | en-US | 390×844 | 2026-11-28T16:37:24.708Z | b8b559f7 | не загружен |
+| words | words | mobile | en-US | 390×844 | 2026-11-28T16:37:24.595Z | b8b559f7 | не загружен |
+| words-full | words | mobile | vi-VN | 390×844 | 2026-11-28T16:34:10.751Z | b8b559f7 | не загружен |
+| words | words | mobile | vi-VN | 390×844 | 2026-11-28T16:34:10.639Z | b8b559f7 | не загружен |
 | sets-jft-badge | jft-card | mobile | ru-RU | 390×844 | 2026-11-27T16:21:09.171Z | 0cb1efaa | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-1691/jft-card--sets-jft-badge--mobile-408766e2.png) |
 | home-jft | jft-card | mobile | ru-RU | 390×844 | 2026-11-27T16:21:07.613Z | 0cb1efaa | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-1691/jft-card--home-jft--mobile-3e88c430.png) |
 | sets-jft-badge | jft-card | desktop | ru-RU | 1280×800 | 2026-11-27T16:19:03.167Z | 0cb1efaa | [png](https://s3.origa.uwuwu.net/pr-screenshots/task-1691/jft-card--sets-jft-badge--desktop-7d816765.png) |
