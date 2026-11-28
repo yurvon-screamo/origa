@@ -222,34 +222,27 @@ pub fn LessonCompleteScreen(is_completed: RwSignal<bool>, review_count: usize) -
             </Card>
 
             <div class="flex gap-3 justify-center">
-                // Umami event attributes sit on wrapper spans: `attr:`-prefixed
-                // component attributes render verbatim under leptos_macro 0.8.18
-                // (tracker selector `[data-umami-event]` never matches them);
-                // clicks bubble to the span. Geometry is unchanged — spans are
-                // content-sized flex items.
-                <span data-umami-event="lesson_finish">
                 <Button
                     test_id=Signal::derive(|| "lesson-next-btn".to_string())
                     variant=Signal::derive(|| ButtonVariant::Filled)
+                    attr:data-umami-event="lesson_finish"
                     on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                         go_next_lesson.run(());
                     })
                 >
                     {t!(i18n, lesson.next_lesson)} <span class="kbd-hint">{t!(i18n, lesson.space_key)}</span>
                 </Button>
-                </span>
 
-                <span data-umami-event="lesson_finish">
                 <Button
                     test_id=Signal::derive(|| "lesson-home-btn".to_string())
                     variant=Signal::derive(|| ButtonVariant::Ghost)
+                    attr:data-umami-event="lesson_finish"
                     on_click=Callback::new(move |_: leptos::ev::MouseEvent| {
                         go_home.run(());
                     })
                 >
                     {t!(i18n, lesson.go_home)} <span class="kbd-hint">"[Esc]"</span>
                 </Button>
-                </span>
             </div>
         </div>
     }
