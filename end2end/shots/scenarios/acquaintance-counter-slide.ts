@@ -1,5 +1,7 @@
 import { expect, type Page } from "@playwright/test";
 
+import { runAcquaintancePresentation } from "../../helpers/lesson.ts";
+
 import { descriptors } from "../catalog.ts";
 import { readStoredUser, writeStoredUser } from "../seed.ts";
 import type { ShotScenario } from "../scenario.ts";
@@ -64,46 +66,13 @@ export const acquaintanceCounterSlideScenario: ShotScenario = {
     }
     expect(presentation, "the hand must show the counter slide").toBe(true);
 
-    // The counter slide is not necessarily the last presentation slide:
-    // walking to it leaves the hand in presentation, so the training
-    // loop below would wait on markers that do not exist yet.
-    for (let index = 0; index < 20; index++) {
-      if (
-        await page
-          .getByTestId("acquaintance-training")
-          .isVisible()
-          .catch(() => false)
-      ) {
-        break;
-      }
-      await next.click({ timeout: 2_000 }).catch(() => undefined);
-      await page.waitForTimeout(300);
-    }
-    await expect(page.getByTestId("acquaintance-training")).toBeVisible({
-      timeout: 30_000,
-    });
+    // The counter slide is not necessarily the last presentation slide.
+    // The shared helper walks the rest of the presentation and asserts
+    // that training is actually on screen.
+    await runAcquaintancePresentation(page);
 
     let answer = false;
     for (let index = 0; index < 60 && !answer; index++) {
-      if (index % 10 === 0) {
-        const seen = await Promise.all(
-          [
-            "acquaintance-training",
-            "acquaintance-reveal-btn",
-            "acquaintance-counter-answer",
-            "acquaintance-rating-dont-know",
-            "acquaintance-completed",
-            "lesson-complete-screen",
-          ].map(
-            async (id) =>
-              `${id}=${await page
-                .getByTestId(id)
-                .isVisible()
-                .catch(() => false)}`,
-          ),
-        );
-        console.log(`[shots] counter answer walk ${index}: ${seen.join(" ")}`);
-      }
       if (await finished(page)) break;
       if (
         !(await page
