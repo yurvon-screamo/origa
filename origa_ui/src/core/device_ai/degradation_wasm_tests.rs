@@ -90,12 +90,18 @@ async fn web_platform_skips_the_query_without_a_round_trip() {
     // events from the invoke suite landed here and broke the == 1 count).
     gloo_timers::future::TimeoutFuture::new(50).await;
     log_capture::take_events();
-    // No UA override: under TauriMock the shell exists, and the runner's
-    // desktop UA (Linux CI) resolves `platform_name()` to a plugin-less
-    // platform — any non-plugin platform exercises the same contract. Since
-    // uwuwu#1098 the query is skipped before any invoke: there is no caps
-    // failure to grade anymore, the contract is "no plugin round-trip at
-    // all, fallback routing without an event".
+    // Explicit desktop UA instead of leaning on the inherited navigator
+    // state: the suite order is a codegen-unit artifact that reshuffles on
+    // any source change (uwuwu#1454 fix round), and a predecessor's leaked
+    // Android override would turn this plugin-less platform into a
+    // query-expecting one. Under TauriMock the shell exists; any
+    // non-plugin platform exercises the same contract. Since uwuwu#1098
+    // the query is skipped before any invoke: there is no caps failure to
+    // grade anymore, the contract is "no plugin round-trip at all,
+    // fallback routing without an event".
+    let _ua = crate::core::tauri_mock::UserAgentOverride::install(
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/158.0.0.0 Safari/537.36",
+    );
     let _mock = TauriMock::install(|command, _args| {
         let command = command.as_string().unwrap_or_default();
         rejected_with("[UNEXPECTED]", &command)
