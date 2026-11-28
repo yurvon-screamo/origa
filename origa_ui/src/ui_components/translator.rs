@@ -7,7 +7,7 @@ use leptos::task::spawn_local;
 use leptos::wasm_bindgen::JsCast;
 use leptos_use::use_event_listener;
 use origa::domain::{
-    NativeLanguage, TokenTranslation, katakana_to_hiragana, lookup_precomputed,
+    NativeLanguage, PartOfSpeech, TokenTranslation, katakana_to_hiragana, lookup_precomputed,
     lookup_tokens_translations, tokenize_text,
 };
 
@@ -36,6 +36,19 @@ fn has_kanji(text: &str) -> bool {
             '\u{4E00}'..='\u{9FFF}' | '\u{3400}'..='\u{4DBF}' | '\u{F900}'..='\u{FAFF}'
         )
     })
+}
+
+/// Particles are excluded from `is_vocabulary_word()`, so their surface-keyed
+/// dictionary entries were unreachable. A surface equal to its lemma may use
+/// that entry; auxiliary suffixes keep their base-form lookup (ん -> ず),
+/// which resolves to the wrong sense, so they stay unparsed plain text.
+fn token_has_popup(token: &TokenTranslation) -> bool {
+    if token.pos.is_vocabulary_word() || token.grammar_label.is_some() {
+        return true;
+    }
+    token.pos == PartOfSpeech::Particle
+        && token.base_form == token.surface_form
+        && token.translation.is_some()
 }
 
 /// Render phase of the translator: while the tokenizer dictionary warms
@@ -202,7 +215,7 @@ pub fn TranslatorText(
                         let translation_text = token.translation.clone();
                         let grammar_label = token.grammar_label.clone();
                         let grammar_description = token.grammar_description.clone();
-                        let clickable = token.pos.is_vocabulary_word() || grammar_label.is_some();
+                        let clickable = token_has_popup(&token);
                         let has_kanji = has_kanji(&surface);
                         let show_base = base_form != surface;
 
@@ -491,7 +504,20 @@ fn TokenPopup(
 
 #[cfg(all(test, not(target_arch = "wasm32")))]
 mod tests {
-    use super::add_word_target;
+    use super::{add_word_target, token_has_popup};
+    use origa::domain::{PartOfSpeech, TokenTranslation};
+
+    fn token(pos: PartOfSpeech, surface: &str, base: &str, translation: &str) -> TokenTranslation {
+        TokenTranslation {
+            surface_form: surface.to_string(),
+            base_form: base.to_string(),
+            reading: String::new(),
+            pos,
+            translation: (!translation.is_empty()).then(|| translation.to_string()),
+            grammar_label: None,
+            grammar_description: None,
+        }
+    }
 
     /// The quick-add target is the dictionary form (base); the surface
     /// fallback is a defensive guard — the tokenizer guarantees a
@@ -506,5 +532,44 @@ mod tests {
     fn add_word_target_falls_back_to_surface() {
         assert_eq!(add_word_target("", "食べた"), "食べた");
         assert_eq!(add_word_target("  ", "魚"), "魚");
+    }
+
+    #[test]
+    fn particle_with_surface_dictionary_entry_opens_popup() {
+        let token = token(
+            PartOfSpeech::Particle,
+            "よ",
+            "よ",
+            "частица, обозначающая вопрос или подтверждение",
+        );
+
+        assert!(token_has_popup(&token));
+    }
+
+    #[test]
+    fn particle_without_dictionary_entry_stays_plain() {
+        let token = token(PartOfSpeech::Particle, "未知", "未知", "");
+
+        assert!(!token_has_popup(&token));
+    }
+
+    #[test]
+    fn auxiliary_with_base_form_translation_stays_plain() {
+        let token = token(
+            PartOfSpeech::AuxiliaryVerb,
+            "ん",
+            "ず",
+            "не (классическое отрицание)",
+        );
+
+        assert!(!token_has_popup(&token));
+    }
+
+    #[test]
+    fn grammar_labelled_token_keeps_popup() {
+        let mut token = token(PartOfSpeech::AuxiliaryVerb, "ませ", "ます", "");
+        token.grammar_label = Some("～ません".to_string());
+
+        assert!(token_has_popup(&token));
     }
 }
