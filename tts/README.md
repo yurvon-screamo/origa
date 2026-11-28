@@ -94,6 +94,38 @@ cp opus_out/*.opus /path/to/repo/cdn/examples/audio/
 cd /path/to/repo && scripts/.venv/bin/python scripts/deploy_cdn.py
 ```
 
+## Counter-suffix audio (uwuwu#1038)
+
+`gen_counter_audio.py` applies the same IndexTTS-2.5 pool/failure contract to
+every binding reading of `counters/counters.json` (76 suffixes, 840 readings).
+Keys are derived as `counters/audio/{26-char Crockford ID}.opus` — zero
+timestamp, 13 chars from SHA-256(`suffix|number|reading`), literal `TTS`
+marker, immutable. The Rust runtime derives the identical key in
+`origa::dictionary::counters::counter_audio_path` (pinned by test vectors), so
+no separate audio index is shipped. A changed reading mints a new key; never
+overwrite an existing one.
+
+The pinned 80-voice pool is the same as for examples; regenerate it from the
+archived `ref_pool_manifest.json` (the live phrases corpus may have been
+rebuilt since the pool was archived — fetch the archived keys from the CDN by
+their phrase IDs if local audio is missing).
+
+```bash
+# from the work dir (same env as above, plus transformers 4.52.x layered
+# on PYTHONPATH if the local XPU env ships a newer major version)
+PYTHONPATH=$PWD/pylib python3 /path/to/repo/tts/gen_counter_audio.py \
+  --cdn-dir ~/origa-cdn --pool ref_pool --checkpoints checkpoints \
+  --out out/counters --shard 0 --total-shards 2   # + a second worker with --shard 1
+bash /path/to/repo/tts/convert_opus.sh out/counters/manifest.json \
+  out/counters opus_out/counters
+cp opus_out/counters/*.opus ~/origa-cdn/counters/audio/
+cd /path/to/repo && scripts/.venv/bin/python scripts/deploy_cdn.py
+```
+
+`counters/audio/` is registered as an immutable sync prefix in
+`_cdn_cache.py` / `deploy_cdn.py`; the converter's completeness gate rejects a
+partial corpus before anything reaches the immutable CDN prefix.
+
 ## Failure model (root-caused via `leak_diag.py`)
 
 - **OOM cascade**: exception unwinding does NOT free tensors a failed
