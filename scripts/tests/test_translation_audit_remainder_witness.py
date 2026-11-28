@@ -1,9 +1,9 @@
 """Guards for the remainder translation-audit witness (uwuwu#1742).
 
-The witness is the only reviewable artifact of this audit: the corrected data
-is held as a patch-set outside the canonical corpus until the owner authorizes
-a CDN deploy (ADR-083, NFT-2 in #1463). These pure tests read the repository
-only; a pin on mutable production state would rot on the next deploy.
+The witness is the reviewable artifact of this audit: corrections, the
+reviewer's protocol and both surgical CDN deploys are recorded here. The
+canonical corpus lives outside the repository (ADR-083); these pure tests read
+the repository only, so a pin on mutable production state cannot rot.
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 WITNESS_PATH = (
     REPO_ROOT / "docs" / "worklogs" / "2026-11-28-translation-audit-remainder.json"
 )
-LOCALES = {"ja", "en", "vi", "ko", "ru"}
+LOCALES = {"ja", "en", "vi", "ko"}
 
 
 @pytest.fixture(scope="module")
@@ -30,14 +30,14 @@ def test_witness_counts_cover_the_declared_population(witness: dict) -> None:
     changes = witness["changes"]
     audit = witness["audit"]
 
-    assert witness["change_count"] == len(changes) == 596
+    assert witness["change_count"] == len(changes) == 472
     assert sum(audit["outcomes"].values()) == audit["population"] == 9468
     assert audit["covered_words"] == 7701
     assert (
         audit["unverified_pool"]
         == audit["covered_words"] + audit["unverified_remaining"]
     )
-    assert dict(Counter(c["class"] for c in changes)) == {"A": 308, "B": 288}
+    assert dict(Counter(c["class"] for c in changes)) == {"A": 241, "B": 231}
 
 
 def test_every_recorded_change_really_changes_a_value(witness: dict) -> None:
@@ -92,12 +92,19 @@ def test_every_change_carries_structured_evidence(witness: dict) -> None:
         assert evidence["quote"].strip(), change
 
 
-def test_deploy_record_carries_authorization_and_edge_verification(
+def test_deploy_records_carry_authorization_and_edge_verification(
     witness: dict,
 ) -> None:
-    deploy = witness["deploy"]
-    assert "Да, делай сам все что требуется" in deploy["authorized_by"]
-    assert deploy["objects_uploaded"] == deploy["edge_verified"] == 35
-    assert deploy["ttl_hold_seconds"] >= 300
-    assert deploy["final_files"] == witness["corpus_snapshot"]["file_count"]
-    assert deploy["local_hash_mismatches"] == 0
+    for deploy in (witness["deploy"], witness["correction_deploy"]):
+        assert "Да, делай сам все что требуется" in deploy["authorized_by"]
+        assert deploy["objects_uploaded"] == deploy["edge_verified"]
+        assert deploy["ttl_hold_seconds"] >= 300
+        assert deploy["final_files"] == witness["corpus_snapshot"]["file_count"]
+        assert deploy["local_hash_mismatches"] == 0
+    assert witness["correction_deploy"]["reverted_changes"] == len(witness["reverts"])
+    assert witness["review"]["protocol"]["A"]["result"].startswith("прочитан целиком")
+
+
+def test_no_change_uses_ru_gloss_as_its_only_evidence(witness: dict) -> None:
+    for change in witness["changes"]:
+        assert change["evidence"]["locale"] != "ru", change
