@@ -1,3 +1,5 @@
+use rstest::rstest;
+
 use crate::domain::{NativeLanguage, OrigaError, User};
 use crate::use_cases::AnalyzeTextForCardsUseCase;
 use crate::use_cases::tests::fixtures::{
@@ -167,6 +169,36 @@ async fn analyze_text_collapses_script_and_inflection_variants_into_one_word() {
     assert_eq!(analysis.words.len(), 1);
     assert_eq!(analysis.total_found, 1);
     assert_eq!(analysis.words[0].base_form, "食べる");
+}
+
+#[rstest]
+#[case::control("たべる 食べる たべました", "食べる")]
+#[case::kaku("かく 書く かいた", "書く")]
+#[case::kiku("きく 聞く きいた", "聞く")]
+#[case::matsu("まつ 待つ まった", "待つ")]
+#[case::omou("おもう 思う おもった", "思う")]
+#[tokio::test]
+async fn analyze_text_collapses_godan_script_and_inflection_variants(
+    #[case] input: &str,
+    #[case] expected: &str,
+) {
+    real_dictionaries_or_skip!();
+
+    // Arrange
+    let user = User::new(
+        "test@example.com".to_string(),
+        NativeLanguage::Russian,
+        None,
+    );
+    let repo = InMemoryUserRepository::with_user(user);
+    let use_case = AnalyzeTextForCardsUseCase::new(&repo);
+
+    // Act — the same three writings the words drawer analyses in one pass.
+    let analysis = use_case.execute(input.to_string()).await.unwrap();
+
+    // Assert — one card candidate, and it must be the kanji lemma (uwuwu#1463 US-1).
+    assert_eq!(analysis.words.len(), 1, "input: {input}");
+    assert_eq!(analysis.words[0].base_form, expected, "input: {input}");
 }
 
 #[tokio::test]
